@@ -1,0 +1,436 @@
+\documentclass[11pt,a4paper]{article}
+
+% =====================================================================
+% PACKAGES
+% =====================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+% =====================================================================
+% PAGE SETUP
+% =====================================================================
+\geometry{
+    left=2.5cm,
+    right=2.5cm,
+    top=2.5cm,
+    bottom=2.5cm
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    urlcolor=blue!70!black,
+    citecolor=blue!70!black
+}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small NF21 -- Exploration de Données}
+\fancyhead[R]{\small UTT -- ISI1}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Section formatting
+\titleformat{\section}{\Large\bfseries\color{blue!70!black}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries\color{blue!50!black}}{\thesubsection}{1em}{}
+
+% =====================================================================
+% DOCUMENT
+% =====================================================================
+\begin{document}
+
+% ---------------------------------------------------------------------
+% TITLE PAGE
+% ---------------------------------------------------------------------
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    
+    {\Large\textsc{Université de Technologie de Troyes}}\\[0.5cm]
+    {\large ISI -- NF21 : Data Understanding}\\[2cm]
+    
+    \rule{\linewidth}{0.5mm}\\[0.4cm]
+    {\Huge\bfseries Pollution Atmosphérique et\\Maladies Respiratoires}\\[0.3cm]
+    \rule{\linewidth}{0.5mm}\\[1.5cm]
+    
+    {\Large\textit{Rapport d'Exploration de Données}}\\[0.5cm]
+    {\large Méthodologie CRISP-DM}\\[3cm]
+    
+    \begin{tabular}{ll}
+        \textbf{Sources de données :} & EDGAR (Émissions) \\
+                                      & GBD 2023 (Maladies) \\[0.5cm]
+        \textbf{Période :} & 1980 -- 2022 \\[0.5cm]
+        \textbf{Couverture :} & 197 pays \\
+    \end{tabular}
+    
+    \vfill
+    {\large \today}
+\end{titlepage}
+
+% ---------------------------------------------------------------------
+% TABLE OF CONTENTS
+% ---------------------------------------------------------------------
+\tableofcontents
+\newpage
+
+% =====================================================================
+% 1. INTRODUCTION
+% =====================================================================
+\section{Introduction}
+
+Ce rapport présente l'exploration des données dans le cadre de l'étude des liens entre la pollution atmosphérique et les maladies respiratoires. L'objectif est de comprendre les caractéristiques des données avant toute modélisation, conformément à la méthodologie CRISP-DM.
+
+\subsection{Objectifs de l'étude}
+
+\begin{itemize}[noitemsep]
+    \item Analyser les tendances temporelles des émissions de polluants atmosphériques
+    \item Étudier la distribution géographique des maladies respiratoires
+    \item Identifier les corrélations entre polluants et pathologies
+    \item Préparer les données pour la phase de modélisation
+\end{itemize}
+
+\subsection{Sources de données}
+
+\textbf{EDGAR (Emissions Database for Global Atmospheric Research)} : Base de données de la Commission Européenne contenant les émissions de 9 polluants atmosphériques par pays, année et secteur d'activité (1970-2022).
+
+\textbf{GBD 2023 (Global Burden of Disease)} : Étude de l'Institute for Health Metrics and Evaluation (IHME) fournissant les taux de mortalité standardisés par âge pour 5 maladies respiratoires (1990-2023).
+
+% =====================================================================
+% 2. DESCRIPTION DES DONNÉES
+% =====================================================================
+\section{Description des Données}
+
+\subsection{Vue d'ensemble}
+
+\begin{table}[H]
+\centering
+\caption{Caractéristiques des jeux de données}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Caractéristique} & \textbf{EDGAR} & \textbf{GBD 2023} \\
+\midrule
+Nombre de pays & 215 & 204 \\
+Période & 1970--2022 & 1990--2023 \\
+Variables & 9 polluants & 5 maladies \\
+Granularité & Pays, année, secteur & Pays, année, sexe \\
+Unité & Kilotonnes (kt) & Taux pour 100 000 hab. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Polluants étudiés (EDGAR)}
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{PM2.5} : Particules fines ($< 2.5 \mu m$)
+    \item \textbf{PM10} : Particules ($< 10 \mu m$)
+    \item \textbf{NOx} : Oxydes d'azote
+    \item \textbf{SO2} : Dioxyde de soufre
+    \item \textbf{CO} : Monoxyde de carbone
+    \item \textbf{NH3} : Ammoniac
+    \item \textbf{NMVOC} : Composés organiques volatils non méthaniques
+    \item \textbf{BC} : Carbone noir
+    \item \textbf{OC} : Carbone organique
+\end{enumerate}
+
+\clearpage
+
+\subsection{Maladies respiratoires (GBD)}
+
+\begin{enumerate}[noitemsep]
+    \item Cancer de la trachée, des bronches et des poumons
+    \item Maladie pulmonaire obstructive chronique (MPOC)
+    \item Asthme
+    \item Pneumoconioses
+    \item Maladies pulmonaires interstitielles
+\end{enumerate}
+
+% =====================================================================
+% 3. QUALITÉ DES DONNÉES
+% =====================================================================
+\section{Qualité des Données}
+
+\subsection{Valeurs manquantes}
+
+L'analyse des valeurs manquantes révèle une excellente complétude des données. Le taux de valeurs manquantes global est inférieur à 0.01\%, principalement concentré dans les correspondances de noms de pays entre les deux sources.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{data_understanding_files/data_understanding_37_1.png}
+    \caption{Distribution des valeurs manquantes par variable}
+    \label{fig:missing}
+\end{figure}
+
+\subsection{Jointure des données}
+
+La jointure des deux sources de données (EDGAR et GBD) a été réalisée sur :
+\begin{itemize}[noitemsep]
+    \item Le code ISO à 3 lettres des pays (197 pays communs)
+    \item L'année (période commune : 1990--2022)
+\end{itemize}
+
+Le dataset final contient \textbf{38 millions d'observations} après jointure complète, et \textbf{63 445 observations} après agrégation par pays-année.
+
+\clearpage
+
+% =====================================================================
+% 4. ANALYSE EXPLORATOIRE
+% =====================================================================
+\section{Analyse Exploratoire}
+
+\subsection{Distribution des émissions par polluant}
+
+La figure \ref{fig:emissions_dist} montre la distribution des émissions pour chaque polluant. On observe une forte asymétrie positive (skewness) pour tous les polluants, avec quelques pays émettant des quantités significativement supérieures à la moyenne mondiale.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_41_1.png}
+    \caption{Distribution des émissions par polluant (échelle logarithmique)}
+    \label{fig:emissions_dist}
+\end{figure}
+
+\subsection{Distribution des décès par maladie}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_42_1.png}
+    \caption{Distribution des taux de mortalité par maladie respiratoire}
+    \label{fig:deaths_dist}
+\end{figure}
+
+\subsection{Comparaison hommes/femmes}
+
+L'analyse par sexe révèle des différences significatives dans les taux de mortalité. Les hommes présentent des taux plus élevés pour la majorité des maladies respiratoires, notamment pour le cancer du poumon et les MPOC.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_43_0.png}
+    \caption{Comparaison des taux de mortalité par sexe}
+    \label{fig:gender}
+\end{figure}
+
+
+\clearpage
+
+% =====================================================================
+% 5. ÉVOLUTIONS TEMPORELLES
+% =====================================================================
+\section{Évolutions Temporelles}
+
+\subsection{Tendances des émissions (1980--2022)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_45_0.png}
+    \caption{Évolution temporelle des émissions mondiales par polluant}
+    \label{fig:emissions_time}
+\end{figure}
+
+\textbf{Observations clés :}
+\begin{itemize}[noitemsep]
+    \item Pics d'émissions en 1990 pour tous les polluants
+    \item Tous les polluants semblent très corrélés
+    \item L'Oxide de Carbone (CO) est le polluant le plus présent
+\end{itemize}
+
+\subsection{Tendances des décès (1990--2022)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_46_0.png}
+    \caption{Évolution temporelle des taux de mortalité par maladie}
+    \label{fig:deaths_time}
+\end{figure}
+
+\textbf{Observations clés :}
+\begin{itemize}[noitemsep]
+    \item Diminution globale des taux de mortalité pour les MPOC
+    \item Stabilité relative du cancer du poumon
+    \item Baisse significative de l'asthme mortel
+\end{itemize}
+
+\clearpage
+% =====================================================================
+% 6. ANALYSE GÉOGRAPHIQUE
+% =====================================================================
+\section{Analyse Géographique}
+
+\subsection{Pays les plus émetteurs}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_48_0.png}
+    \caption{Top 15 des pays émetteurs (toutes émissions confondues)}
+    \label{fig:top_emitters}
+\end{figure}
+
+Les plus grands émetteurs sont la Chine, les États-Unis, l'Inde et la Russie, reflétant leur activité industrielle et leur population.
+
+\subsection{Pays avec les taux de mortalité les plus élevés}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_49_0.png}
+    \caption{Top 15 des pays par taux de mortalité respiratoire}
+    \label{fig:top_deaths}
+\end{figure}
+
+\clearpage
+% =====================================================================
+% 7. ANALYSE SECTORIELLE
+% =====================================================================
+\section{Analyse Sectorielle}
+
+\subsection{Secteurs d'activité}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_51_0.png}
+    \caption{Top 10 des secteurs d'activité par émissions totales}
+    \label{fig:sectors}
+\end{figure}
+
+Les secteurs dominants sont :
+\begin{itemize}[noitemsep]
+    \item Transport routier
+    \item Industrie manufacturière
+    \item Production d'énergie
+    \item Agriculture
+\end{itemize}
+
+\subsection{Relation secteur-polluant}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_52_1.png}
+    \caption{Heatmap des émissions par secteur et polluant}
+    \label{fig:sector_pollutant}
+\end{figure}
+
+Cette heatmap révèle les associations secteur-polluant : le transport routier est associé aux NOx et CO, tandis que l'agriculture domine les émissions de NH3.
+
+
+\clearpage
+% =====================================================================
+% 8. ANALYSE DES CORRÉLATIONS
+% =====================================================================
+\section{Analyse des Corrélations}
+
+\subsection{Corrélations polluants-maladies}
+
+La matrice de corrélation entre polluants et maladies respiratoires constitue le cœur de cette étude exploratoire.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_58_0.png}
+    \caption{Matrice de corrélation : polluants vs maladies respiratoires}
+    \label{fig:corr_pollutant_disease}
+\end{figure}
+
+\textbf{Corrélations notables :}
+\begin{itemize}[noitemsep]
+    \item PM2.5 et PM10 montrent des corrélations positives modérées avec toutes les maladies
+    \item NH3 et OC présentent les corrélations les plus fortes avec le cancer du poumon
+    \item les MPOC est corrélée à la plupart des polluants
+\end{itemize}
+
+\subsection{Matrice de corrélation complète}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_59_0.png}
+    \caption{Matrice de corrélation complète (polluants et maladies)}
+    \label{fig:corr_full}
+\end{figure}
+
+\textbf{Observations :}
+\begin{itemize}[noitemsep]
+    \item Forte multicolinéarité entre polluants (r $>$ 0.8 pour la plupart)
+    \item Les maladies sont également corrélées entre elles
+    \item Ces corrélations suggèrent des facteurs communs (développement économique, urbanisation)
+    \item les MPOC semblent plus corrélées aux polluants que les autres maladies (notamment NMVOC, OC, PM10 et PM25)
+\end{itemize}
+
+\subsection{Relations détaillées (scatter plots)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_61_0.png}
+    \caption{Scatter plots : polluants clés vs maladies (échelle log)}
+    \label{fig:scatter}
+\end{figure}
+
+\clearpage
+% =====================================================================
+% 9. SYNTHÈSE ET CONCLUSIONS
+% =====================================================================
+\section{Synthèse et Conclusions}
+
+\subsection{Qualité des données}
+
+\begin{table}[H]
+\centering
+\caption{Résumé de la qualité des données}
+\begin{tabular}{lc}
+\toprule
+\textbf{Critère} & \textbf{Évaluation} \\
+\midrule
+Complétude & Excellente ($>$ 99.99\%) \\
+Couverture géographique & 197 pays \\
+Couverture temporelle & 43 ans (1980--2022) \\
+Cohérence des unités & Vérifiée \\
+Outliers & $<$ 2\% (à traiter) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Principales conclusions}
+
+\begin{enumerate}
+    \item \textbf{Corrélations significatives} : Des corrélations positives modérées existent entre les polluants atmosphériques et les maladies respiratoires, particulièrement pour les particules fines (PM2.5, PM10), les NVMOC, l'Oxide de Carbone et le cancer du poumon ainsi que les maladies pulmonaires obstructives chroniques (MPOC) .
+    
+    \item \textbf{Multicolinéarité} : Les polluants sont fortement corrélés entre eux, ce qui nécessitera une attention particulière lors de la modélisation (régularisation, réduction de dimension).
+    
+    \item \textbf{Disparités géographiques} : Les pays en développement présentent des taux d'émission croissants tandis que les pays développés montrent des tendances à la baisse.
+    
+    \item \textbf{Différences par sexe} : Les hommes sont plus touchés par les maladies respiratoires, avec des taux de mortalité 2 à 3 fois supérieurs pour le cancer du poumon.
+    
+    \item \textbf{Évolution temporelle} : Malgré l'augmentation des émissions globales, les taux de mortalité standardisés tendent à diminuer, suggérant l'impact positif des avancées médicales.
+\end{enumerate}
+
+\subsection{Recommandations pour la modélisation}
+
+\begin{itemize}[noitemsep]
+    \item Appliquer une transformation logarithmique aux émissions
+    \item Considérer une analyse en composantes principales (ACP) pour réduire la multicolinéarité
+    \item Inclure des variables de contrôle (PIB, urbanisation, accès aux soins)
+    \item Utiliser des modèles de panel pour exploiter la dimension temporelle
+    \item Tester des modèles avec décalage temporel (lag) entre exposition et maladie
+\end{itemize}
+
+% =====================================================================
+% BIBLIOGRAPHY (optional)
+% =====================================================================
+\section*{Références}
+
+\begin{itemize}[noitemsep]
+    \item EDGAR v8.0 : \url{https://edgar.jrc.ec.europa.eu/}
+    \item GBD 2023 : \url{https://ghdx.healthdata.org/gbd-2023}
+    \item Méthodologie CRISP-DM : \url{https://moodle.utt.fr/pluginfile.php/13371/mod_resource/content/1/CRISP-DM.pdf}
+\end{itemize}
+
+\end{document}
