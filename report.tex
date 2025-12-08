@@ -18,6 +18,8 @@
 \usepackage{fancyhdr}
 \usepackage{titlesec}
 \usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
 
 % =====================================================================
 % PAGE SETUP
@@ -60,24 +62,25 @@
 \begin{titlepage}
     \centering
     \vspace*{2cm}
-    
+
     {\Large\textsc{Université de Technologie de Troyes}}\\[0.5cm]
-    {\large ISI -- NF21 : Data Understanding}\\[2cm]
-    
+    {\large ISI -- NF21 : Business \& Data Understanding}\\[2cm]
+
     \rule{\linewidth}{0.5mm}\\[0.4cm]
-    {\Huge\bfseries Pollution Atmosphérique et\\Maladies Respiratoires}\\[0.3cm]
+    {\Huge\bfseries Respiratory Risk Analytics}\\[0.2cm]
+    {\Large Pollution Atmosphérique et Maladies Respiratoires}\\[0.3cm]
     \rule{\linewidth}{0.5mm}\\[1.5cm]
-    
-    {\Large\textit{Rapport d'Exploration de Données}}\\[0.5cm]
+
+    {\Large\textit{Rapport d'Analyse de Données}}\\[0.5cm]
     {\large Méthodologie CRISP-DM}\\[3cm]
-    
+
     \begin{tabular}{ll}
         \textbf{Sources de données :} & EDGAR (Émissions) \\
                                       & GBD 2023 (Maladies) \\[0.5cm]
         \textbf{Période :} & 1980 -- 2022 \\[0.5cm]
         \textbf{Couverture :} & 197 pays \\
     \end{tabular}
-    
+
     \vfill
     {\large \today}
 \end{titlepage}
@@ -93,25 +96,500 @@
 % =====================================================================
 \section{Introduction}
 
-Ce rapport présente l'exploration des données dans le cadre de l'étude des liens entre la pollution atmosphérique et les maladies respiratoires. L'objectif est de comprendre les caractéristiques des données avant toute modélisation, conformément à la méthodologie CRISP-DM.
+La pollution atmosphérique constitue aujourd'hui l'un des principaux déterminants environnementaux de santé. Ses effets sur les pathologies respiratoires sont largement documentés, mais leur ampleur et leur dynamique varient selon les territoires, les périodes et les types de polluants.
+
+Le projet \textbf{Respiratory Risk Analytics} s'inscrit dans cette perspective. Il vise à mieux comprendre les interactions entre les émissions atmosphériques et l'évolution des maladies respiratoires à l'échelle mondiale. En s'appuyant sur des bases de données reconnues et actualisées, le projet cherche à fournir des éléments factuels pour aider les décideurs à identifier les zones les plus sensibles et à prioriser les actions de réduction de la pollution.
+
+Ce rapport couvre les deux premières phases de la méthodologie CRISP-DM :
+\begin{itemize}[noitemsep]
+    \item \textbf{Business Understanding} : compréhension du contexte métier, des enjeux et des objectifs du projet
+    \item \textbf{Data Understanding} : exploration et analyse des données disponibles
+\end{itemize}
 
 \subsection{Objectifs de l'étude}
 
 \begin{itemize}[noitemsep]
+    \item Comprendre et quantifier la relation entre la pollution atmosphérique et l'incidence des maladies respiratoires
+    \item Identifier les zones prioritaires d'intervention
     \item Analyser les tendances temporelles des émissions de polluants atmosphériques
     \item Étudier la distribution géographique des maladies respiratoires
     \item Identifier les corrélations entre polluants et pathologies
     \item Préparer les données pour la phase de modélisation
 \end{itemize}
 
-\subsection{Sources de données}
-
-\textbf{EDGAR (Emissions Database for Global Atmospheric Research)} : Base de données de la Commission Européenne contenant les émissions de 9 polluants atmosphériques par pays, année et secteur d'activité (1970-2022).
-
-\textbf{GBD 2023 (Global Burden of Disease)} : Étude de l'Institute for Health Metrics and Evaluation (IHME) fournissant les taux de mortalité standardisés par âge pour 5 maladies respiratoires (1990-2023).
+\clearpage
+% =====================================================================
+% PARTIE I : BUSINESS UNDERSTANDING
+% =====================================================================
+\part{Business Understanding}
 
 % =====================================================================
-% 2. DESCRIPTION DES DONNÉES
+% 2. CONTEXTE GÉNÉRAL
+% =====================================================================
+\section{Contexte Général}
+
+Ce projet s'inscrit dans le champ de la santé publique et de l'environnement, deux domaines où les interactions entre qualité de l'air et santé humaine constituent des préoccupations majeures. L'augmentation de la fréquence des épisodes de pollution et la progression des maladies respiratoires en font un enjeu prioritaire pour les autorités sanitaires nationales et internationales. Les politiques publiques s'appuient désormais fortement sur les données pour orienter les stratégies territoriales de prévention et d'intervention.
+
+Plusieurs acteurs sont impliqués dans cette dynamique : les collectivités territoriales, les agences de santé publique, les ministères en charge de la santé et de l'environnement, ainsi que les organisations européennes comme la Commission Européenne. Les citoyens, directement exposés aux risques liés à la pollution atmosphérique, représentent la première population bénéficiaire du projet. Dans ce contexte institutionnel riche, le recours à une analyse \textit{data-driven} constitue un outil d'aide à la décision essentiel.
+
+% =====================================================================
+% 3. QUESTION MÉTIER ET OBJECTIFS
+% =====================================================================
+\section{Question Métier et Objectifs}
+
+L'objectif global du projet Respiratory Risk Analytics consiste à comprendre et quantifier la relation entre la pollution atmosphérique et l'incidence des maladies respiratoires dans le monde. Cette question métier répond à un besoin décisionnel réel : identifier les zones prioritaires d'intervention et mesurer l'impact potentiel ou réel des politiques publiques de réduction de la pollution.
+
+La question centrale formulée est la suivante : \textbf{« Quelle est la relation entre la pollution atmosphérique et l'incidence des maladies respiratoires à l'échelle mondiale ? »}.
+
+Plusieurs sous-questions guident cette problématique :
+\begin{itemize}[noitemsep]
+    \item \textbf{Diagnostiquer} : identifier les zones où les émissions et les maladies respiratoires sont les plus élevées
+    \item \textbf{Expliquer} : analyser les liens temporels entre variations de pollution et variations de santé
+    \item \textbf{Prédire} : estimer l'évolution potentielle des maladies à partir des niveaux de pollution
+    \item \textbf{Recommander} : proposer des actions prioritaires
+\end{itemize}
+
+\clearpage
+% =====================================================================
+% 4. ENJEUX DU PROJET
+% =====================================================================
+\section{Enjeux du Projet}
+
+Les enjeux sont multiples et concernent plusieurs dimensions :
+
+\subsection{Enjeux environnementaux}
+La réduction des émissions de polluants constitue un impératif lié à la fois aux réglementations européennes et à la protection de la biodiversité.
+
+\subsection{Enjeux sanitaires}
+La pollution atmosphérique est reconnue comme un facteur aggravant majeur pour des pathologies telles que l'asthme, la bronchopneumopathie chronique obstructive (BPCO) et les infections respiratoires aiguës.
+
+\subsection{Enjeux économiques}
+Une diminution de l'incidence des maladies respiratoires permettrait une réduction des dépenses hospitalières, des coûts de prise en charge et des pertes de productivité liées aux arrêts de travail.
+
+\subsection{Enjeux sociaux}
+Les enjeux sociaux touchent directement la qualité de vie des populations, notamment les plus vulnérables.
+
+\vspace{0.5cm}
+Ce projet présente ainsi une forte valeur ajoutée, car il vise à éclairer la décision publique et à cibler les zones où les actions de réduction de la pollution atmosphérique auraient l'effet le plus significatif.
+
+% =====================================================================
+% 5. OBJECTIFS MÉTIER
+% =====================================================================
+\section{Objectifs Métier}
+
+Le projet se fixe plusieurs objectifs métier :
+
+\begin{enumerate}
+    \item \textbf{Identification des zones prioritaires} : grâce à une démarche de data mining, identifier les zones géographiques où les marges de réduction de la pollution sont les plus fortes et où les interventions publiques peuvent avoir un impact significatif.
+    
+    \item \textbf{Réduction de l'incidence} : proposer des solutions permettant de réduire l'incidence des maladies respiratoires de 5\% dans les zones les plus sensibles, et de diminuer de 10\% les émissions des polluants les plus dangereux pour la santé.
+    
+    \item \textbf{Identification des polluants critiques} : identifier les polluants ayant l'impact le plus important sur la santé respiratoire à l'échelle mondiale.
+\end{enumerate}
+
+\clearpage
+% =====================================================================
+% 6. JEUX DE DONNÉES
+% =====================================================================
+\section{Jeux de Données}
+
+Pour répondre à ces objectifs, deux principaux jeux de données externes ont été identifiés.
+
+\subsection{Données EDGAR}
+
+\textbf{EDGAR (Emissions Database for Global Atmospheric Research)} : Base de données de la Commission Européenne contenant les émissions de polluants atmosphériques par pays, année et secteur d'activité.
+
+Les données se présentent sous forme de fichiers Excel contenant environ 6 000 lignes par polluant. Les variables incluent :
+\begin{itemize}[noitemsep]
+    \item L'année (numérique)
+    \item Le pays (catégoriel)
+    \item Le secteur d'émission (catégoriel)
+    \item Le type de polluant (catégoriel)
+    \item La quantité d'émissions en gigagrammes (numérique)
+\end{itemize}
+
+Ces données permettent de suivre l'évolution des polluants majeurs (PM2.5, PM10, NOx, SO2, etc.) dans le temps.
+
+\subsection{Données IHME : Global Burden of Disease}
+
+\textbf{GBD 2023 (Global Burden of Disease)} : Étude de l'Institute for Health Metrics and Evaluation (IHME) fournissant les taux de mortalité standardisés par âge pour les maladies respiratoires.
+
+Les fichiers CSV contiennent environ 30 000 lignes et décrivent les taux normalisés d'incidence et de mortalité pour 100 000 habitants. Les variables incluent :
+\begin{itemize}[noitemsep]
+    \item L'année (numérique)
+    \item Le pays (catégoriel)
+    \item Le sexe (catégoriel)
+    \item Les taux d'incidence et de décès (numériques)
+\end{itemize}
+
+Ces deux jeux de données sont complémentaires et permettent une analyse spatio-temporelle robuste. La littérature scientifique, notamment les travaux de Santé Publique France, confirme l'existence d'un lien entre pollution atmosphérique et santé respiratoire, justifiant pleinement leur mise en relation.
+
+% =====================================================================
+% 7. PÉRIMÈTRE ANALYTIQUE
+% =====================================================================
+\section{Périmètre Analytique}
+
+Le périmètre analytique du projet est défini comme suit :
+
+\begin{table}[H]
+\centering
+\caption{Périmètre du projet}
+\begin{tabular}{ll}
+\toprule
+\textbf{Dimension} & \textbf{Périmètre} \\
+\midrule
+Couverture géographique & Ensemble des pays du monde (197 pays) \\
+Période & 1980--2022 \\
+Polluants & PM2.5, PM10, NOx, SO2, CO, NH3, NMVOC, BC, OC \\
+Maladies & Asthme, BPCO, cancer du poumon, pneumoconioses, \\
+& maladies pulmonaires interstitielles \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Hors périmètre :} Les analyses à l'échelle intra-urbaine, ou celles portant sur les déterminants sociaux individuels, ne sont pas incluses en raison du manque de données disponibles.
+
+\clearpage
+% =====================================================================
+% 8. PARTIES PRENANTES
+% =====================================================================
+\section{Parties Prenantes}
+
+\subsection{Commanditaire principal}
+
+L'\textbf{Agence Régionale de Santé (ARS)} constitue une partie prenante centrale dans ce projet, à la fois comme utilisatrice directe des analyses produites et comme actrice opérationnelle des décisions qui pourront en découler. En tant qu'autorité sanitaire de proximité, l'ARS est chargée de mettre en œuvre au niveau régional les politiques nationales liées à la prévention, à la surveillance épidémiologique et à la protection de la santé des populations.
+
+Dans le contexte de la pollution atmosphérique, l'ARS joue un rôle d'interface entre les données scientifiques, les acteurs locaux et les décisions publiques. Les résultats du projet pourront être mobilisés pour ajuster les plans régionaux santé-environnement, cibler les territoires les plus vulnérables et renforcer les dispositifs de prévention.
+
+\subsection{Équipe projet}
+
+L'équipe projet est composée d'analystes et de spécialistes des données chargés de transformer les données brutes (EDGAR, IHME) en indicateurs intelligibles.
+
+\subsection{Acteurs secondaires}
+
+Les résultats du projet sont également destinés à des acteurs secondaires :
+\begin{itemize}[noitemsep]
+    \item \textbf{Santé Publique France} : intégration des indicateurs dans la surveillance sanitaire nationale
+    \item \textbf{Observatoires régionaux de la qualité de l'air (ATMO)} : relais de l'information à l'échelle locale
+    \item \textbf{Collectivités territoriales} (métropoles, régions) : déploiement des actions concrètes de réduction des émissions
+    \item \textbf{Organismes de recherche} spécialisés en climat, pollution ou santé publique
+\end{itemize}
+
+% =====================================================================
+% 9. RISQUES ET HYPOTHÈSES
+% =====================================================================
+\section{Risques et Hypothèses}
+
+\subsection{Risques identifiés}
+
+Plusieurs risques concernent la qualité et la comparabilité des données :
+\begin{itemize}[noitemsep]
+    \item Les méthodes de mesure diffèrent selon les pays
+    \item Certaines séries peuvent être incomplètes
+    \item Des facteurs socio-économiques non observés peuvent introduire des biais
+    \item La granularité géographique est limitée à l'échelle des pays
+\end{itemize}
+
+\subsection{Hypothèses}
+
+Les hypothèses principales du projet reposent sur :
+\begin{itemize}[noitemsep]
+    \item La fiabilité des données EDGAR et IHME
+    \item La comparabilité des observations dans le temps et entre pays
+    \item L'existence d'un lien statistique entre pollution atmosphérique et maladies respiratoires
+\end{itemize}
+
+\clearpage
+% =====================================================================
+% PARTIE II : DATA UNDERSTANDING
+% =====================================================================
+\part{Data Understanding}
+
+% =====================================================================
+% 10. INDICATEURS ET CHAÎNES DE VALORISATION
+% =====================================================================
+\section{Indicateurs et Chaînes de Valorisation}
+
+Dans le cadre de la méthodologie CRISP-DM, cette section présente les indicateurs clés et les chaînes de valorisation identifiées pour l'exploration des données sur la pollution atmosphérique et les maladies respiratoires.
+
+\subsection{Indicateurs clés}
+
+\begin{table}[H]
+\centering
+\caption{Indicateurs identifiés pour l'étude}
+\begin{tabular}{p{4cm}p{6cm}p{4cm}}
+\toprule
+\textbf{Indicateur} & \textbf{Description} & \textbf{Unité} \\
+\midrule
+Émissions totales par polluant & Somme des émissions annuelles par type de polluant & Kilotonnes (kt) \\
+Taux de mortalité standardisé & Décès pour 100 000 habitants ajusté par âge & Taux / 100 000 hab. \\
+Corrélation polluant-maladie & Coefficient de Pearson entre émissions et mortalité & [-1, 1] \\
+Part sectorielle & Pourcentage des émissions par secteur d'activité & \% \\
+Tendance temporelle & Variation annuelle moyenne des émissions/mortalité & \% / an \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\clearpage
+\subsection{Chaînes de valorisation}
+
+Trois chaînes de valorisation principales ont été identifiées pour cette phase d'exploration.
+
+% Style commun pour les trois schémas
+\tikzset{
+    tache_gen/.style={rectangle, rounded corners=6pt, draw=blue!70, fill=blue!10,
+        text width=2.2cm, minimum height=0.9cm, align=center, font=\small\bfseries},
+    tache_spec/.style={rectangle, rounded corners=4pt, draw=red!70!black, fill=red!10,
+        text width=1.8cm, minimum height=0.55cm, align=center, inner sep=1pt, font=\scriptsize\linespread{0.8}\selectfont},
+    outil/.style={rectangle, rounded corners=3pt, draw=green!50!black, fill=green!10,
+        text width=2.2cm, minimum height=0.6cm, align=center},
+    fleche/.style={-{Stealth[length=2.5mm]}, thick, blue!60},
+    fleche_spec/.style={-{Stealth[length=1.5mm]}, thin, gray},
+}
+
+\subsubsection{Chaîne 1 -- Analyse des corrélations polluants-maladies}
+
+\textbf{Objectif :} Identifier les liens statistiques entre les émissions de polluants atmosphériques et les taux de mortalité par maladie respiratoire.
+
+\begin{table}[H]
+\centering
+\caption{Chaîne 1 -- Corrélations polluants-maladies}
+\begin{tabular}{p{3.5cm}p{5.5cm}p{4.5cm}}
+\toprule
+\textbf{Tâche générique (TG)} & \textbf{Tâches spécifiques (TS)} & \textbf{Outils} \\
+\midrule
+TG11 -- Collecte et Intégration & Télécharger les données EDGAR (émissions) et GBD (mortalité), extraire les fichiers Excel/CSV & Python (requests), Excel, CSV \\
+\midrule
+TG12 -- Préparation et Mise en qualité & Harmoniser les noms de pays (ISO 3166), traiter les valeurs manquantes, uniformiser les unités & Polars, Pandas \\
+\midrule
+TG13 -- Traitement et Analyse & Calculer les matrices de corrélation, identifier les associations significatives & Python (scipy, numpy), Omniscope \\
+\midrule
+TG14 -- Restitution et Visualisation & Générer les heatmaps de corrélation, scatter plots polluant vs maladie & Matplotlib, Seaborn, Omniscope \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1, transform shape]
+\node[tache_gen] (collecte) at (0,0) {Collecte};
+\node[tache_gen] (preparation) at (4,0) {Préparation};
+\node[tache_gen] (traitement) at (8,0) {Traitement};
+\node[tache_gen] (restitution) at (12,0) {Restitution};
+
+\draw[fleche] (collecte) -- (preparation);
+\draw[fleche] (preparation) -- (traitement);
+\draw[fleche] (traitement) -- (restitution);
+
+\node[tache_spec] (edgar) at (-1,-1.5) {Télécharger EDGAR};
+\node[tache_spec] (gbd) at (1,-1.5) {Télécharger GBD};
+\node[tache_spec] (harmoniser) at (3,-1.5) {Harmoniser pays};
+\node[tache_spec] (nettoyer) at (5,-1.5) {Nettoyer valeurs};
+\node[tache_spec] (fusionner) at (7,-1.5) {Fusionner données};
+\node[tache_spec] (calculer) at (9,-1.5) {Calculer corrél.};
+\node[tache_spec] (heatmap) at (11,-1.5) {Heatmaps};
+\node[tache_spec] (scatter) at (13,-1.5) {Scatter plots};
+
+\draw[fleche_spec] (collecte.south) -- (edgar.north);
+\draw[fleche_spec] (collecte.south) -- (gbd.north);
+\draw[fleche_spec] (preparation.south) -- (harmoniser.north);
+\draw[fleche_spec] (preparation.south) -- (nettoyer.north);
+\draw[fleche_spec] (traitement.south) -- (fusionner.north);
+\draw[fleche_spec] (traitement.south) -- (calculer.north);
+\draw[fleche_spec] (restitution.south) -- (heatmap.north);
+\draw[fleche_spec] (restitution.south) -- (scatter.north);
+
+\node[outil] (outil_collecte) at (0,-3) {\scriptsize Python, Excel};
+\node[outil] (outil_prep) at (4,-3) {\scriptsize Polars, Pandas};
+\node[outil] (outil_trait) at (8,-3) {\scriptsize Scipy, Omniscope};
+\node[outil] (outil_rest) at (12,-3) {\scriptsize Matplotlib, Omniscope};
+
+\draw[fleche_spec, dashed] (edgar.south) -- (outil_collecte.north);
+\draw[fleche_spec, dashed] (gbd.south) -- (outil_collecte.north);
+\draw[fleche_spec, dashed] (harmoniser.south) -- (outil_prep.north);
+\draw[fleche_spec, dashed] (nettoyer.south) -- (outil_prep.north);
+\draw[fleche_spec, dashed] (fusionner.south) -- (outil_trait.north);
+\draw[fleche_spec, dashed] (calculer.south) -- (outil_trait.north);
+\draw[fleche_spec, dashed] (heatmap.south) -- (outil_rest.north);
+\draw[fleche_spec, dashed] (scatter.south) -- (outil_rest.north);
+
+% Légende
+\node[tache_gen, text width=0.6cm, minimum height=0.3cm] at (3,-4.2) {\tiny TG};
+\node[anchor=west, font=\tiny] at (3.5,-4.2) {Tâche gén.};
+\node[tache_spec, text width=0.6cm, minimum height=0.3cm] at (6,-4.2) {\tiny TS};
+\node[anchor=west, font=\tiny] at (6.5,-4.2) {Tâche spéc.};
+\node[outil, text width=0.6cm, minimum height=0.3cm] at (9,-4.2) {\tiny O};
+\node[anchor=west, font=\tiny] at (9.5,-4.2) {Outils};
+\end{tikzpicture}
+
+\caption{Schéma de la chaîne 1 -- Corrélations polluants-maladies}
+\label{fig:chaine1}
+\end{figure}
+
+\clearpage
+\subsubsection{Chaîne 2 -- Analyse géographique et temporelle}
+
+\textbf{Objectif :} Comprendre la distribution spatiale et l'évolution temporelle des émissions et de la mortalité respiratoire.
+
+\begin{table}[H]
+\centering
+\caption{Chaîne 2 -- Analyse géographique et temporelle}
+\begin{tabular}{p{3.5cm}p{5.5cm}p{4.5cm}}
+\toprule
+\textbf{Tâche générique (TG)} & \textbf{Tâches spécifiques (TS)} & \textbf{Outils} \\
+\midrule
+TG21 -- Collecte et Intégration & Joindre les données EDGAR et GBD sur code ISO pays et année & Polars (join) \\
+\midrule
+TG22 -- Préparation et Mise en qualité & Agréger par pays-année, filtrer la période commune (1980-2022), 197 pays & Polars (group\_by, filter) \\
+\midrule
+TG23 -- Traitement et Analyse & Calculer les classements (top émetteurs, top mortalité), tendances temporelles & Python (numpy, pandas), Omniscope \\
+\midrule
+TG24 -- Restitution et Visualisation & Graphiques bar charts par pays, courbes d'évolution temporelle & Matplotlib, Seaborn, Omniscope \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1, transform shape]
+\node[tache_gen] (collecte) at (0,0) {Collecte};
+\node[tache_gen] (preparation) at (4,0) {Préparation};
+\node[tache_gen] (traitement) at (8,0) {Traitement};
+\node[tache_gen] (restitution) at (12,0) {Restitution};
+
+\draw[fleche] (collecte) -- (preparation);
+\draw[fleche] (preparation) -- (traitement);
+\draw[fleche] (traitement) -- (restitution);
+
+\node[tache_spec] (join) at (-1,-1.5) {Joindre EDGAR};
+\node[tache_spec] (joingbd) at (1,-1.5) {Joindre GBD};
+\node[tache_spec] (agreger) at (3,-1.5) {Agréger pays-an};
+\node[tache_spec] (filtrer) at (5,-1.5) {Filtrer période};
+\node[tache_spec] (classer) at (7,-1.5) {Classements};
+\node[tache_spec] (tendance) at (9,-1.5) {Tendances temp.};
+\node[tache_spec] (barchart) at (11,-1.5) {Bar charts};
+\node[tache_spec] (courbes) at (13,-1.5) {Courbes évol.};
+
+\draw[fleche_spec] (collecte.south) -- (join.north);
+\draw[fleche_spec] (collecte.south) -- (joingbd.north);
+\draw[fleche_spec] (preparation.south) -- (agreger.north);
+\draw[fleche_spec] (preparation.south) -- (filtrer.north);
+\draw[fleche_spec] (traitement.south) -- (classer.north);
+\draw[fleche_spec] (traitement.south) -- (tendance.north);
+\draw[fleche_spec] (restitution.south) -- (barchart.north);
+\draw[fleche_spec] (restitution.south) -- (courbes.north);
+
+\node[outil] (outil_collecte) at (0,-3) {\scriptsize Polars (join)};
+\node[outil] (outil_prep) at (4,-3) {\scriptsize Polars, Pandas};
+\node[outil] (outil_trait) at (8,-3) {\scriptsize Numpy, Omniscope};
+\node[outil] (outil_rest) at (12,-3) {\scriptsize Matplotlib, Omniscope};
+
+\draw[fleche_spec, dashed] (join.south) -- (outil_collecte.north);
+\draw[fleche_spec, dashed] (joingbd.south) -- (outil_collecte.north);
+\draw[fleche_spec, dashed] (agreger.south) -- (outil_prep.north);
+\draw[fleche_spec, dashed] (filtrer.south) -- (outil_prep.north);
+\draw[fleche_spec, dashed] (classer.south) -- (outil_trait.north);
+\draw[fleche_spec, dashed] (tendance.south) -- (outil_trait.north);
+\draw[fleche_spec, dashed] (barchart.south) -- (outil_rest.north);
+\draw[fleche_spec, dashed] (courbes.south) -- (outil_rest.north);
+
+% Légende
+\node[tache_gen, text width=0.6cm, minimum height=0.3cm] at (3,-4.2) {\tiny TG};
+\node[anchor=west, font=\tiny] at (3.5,-4.2) {Tâche gén.};
+\node[tache_spec, text width=0.6cm, minimum height=0.3cm] at (6,-4.2) {\tiny TS};
+\node[anchor=west, font=\tiny] at (6.5,-4.2) {Tâche spéc.};
+\node[outil, text width=0.6cm, minimum height=0.3cm] at (9,-4.2) {\tiny O};
+\node[anchor=west, font=\tiny] at (9.5,-4.2) {Outils};
+\end{tikzpicture}
+
+\caption{Schéma de la chaîne 2 -- Analyse géographique et temporelle}
+\label{fig:chaine2}
+\end{figure}
+
+\clearpage
+\subsubsection{Chaîne 3 -- Analyse sectorielle des émissions}
+
+\textbf{Objectif :} Identifier les secteurs d'activité les plus polluants pour orienter les analyses et recommandations.
+
+\begin{table}[H]
+\centering
+\caption{Chaîne 3 -- Analyse sectorielle}
+\begin{tabular}{p{3.5cm}p{5.5cm}p{4.5cm}}
+\toprule
+\textbf{Tâche générique (TG)} & \textbf{Tâches spécifiques (TS)} & \textbf{Outils} \\
+\midrule
+TG31 -- Collecte et Intégration & Extraire les données EDGAR avec granularité sectorielle (IPCC categories) & Python, Excel \\
+\midrule
+TG32 -- Préparation et Mise en qualité & Regrouper les secteurs par catégorie IPCC, normaliser les noms & Polars, Pandas, Omniscope \\
+\midrule
+TG33 -- Traitement et Analyse & Calculer les émissions totales par secteur et polluant, identifier les associations secteur-polluant & Python (numpy), Omniscope \\
+\midrule
+TG34 -- Restitution et Visualisation & Heatmap secteur-polluant, bar charts des top secteurs & Matplotlib, Seaborn, Omniscope \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1, transform shape]
+\node[tache_gen] (collecte) at (0,0) {Collecte};
+\node[tache_gen] (preparation) at (4,0) {Préparation};
+\node[tache_gen] (traitement) at (8,0) {Traitement};
+\node[tache_gen] (restitution) at (12,0) {Restitution};
+
+\draw[fleche] (collecte) -- (preparation);
+\draw[fleche] (preparation) -- (traitement);
+\draw[fleche] (traitement) -- (restitution);
+
+\node[tache_spec] (extraire) at (-1,-1.5) {Extraire EDGAR};
+\node[tache_spec] (ipcc) at (1,-1.5) {Catég. IPCC};
+\node[tache_spec] (regrouper) at (3,-1.5) {Regrouper sect.};
+\node[tache_spec] (normaliser) at (5,-1.5) {Normaliser noms};
+\node[tache_spec] (emission) at (7,-1.5) {Émissions/sect.};
+\node[tache_spec] (assoc) at (9,-1.5) {Assoc. sect-pol.};
+\node[tache_spec] (heatmap) at (11,-1.5) {Heatmap};
+\node[tache_spec] (topbar) at (13,-1.5) {Top secteurs};
+
+\draw[fleche_spec] (collecte.south) -- (extraire.north);
+\draw[fleche_spec] (collecte.south) -- (ipcc.north);
+\draw[fleche_spec] (preparation.south) -- (regrouper.north);
+\draw[fleche_spec] (preparation.south) -- (normaliser.north);
+\draw[fleche_spec] (traitement.south) -- (emission.north);
+\draw[fleche_spec] (traitement.south) -- (assoc.north);
+\draw[fleche_spec] (restitution.south) -- (heatmap.north);
+\draw[fleche_spec] (restitution.south) -- (topbar.north);
+
+\node[outil] (outil_collecte) at (0,-3) {\scriptsize Python, Excel};
+\node[outil] (outil_prep) at (4,-3) {\scriptsize Polars, Omniscope};
+\node[outil] (outil_trait) at (8,-3) {\scriptsize Numpy, Omniscope};
+\node[outil] (outil_rest) at (12,-3) {\scriptsize Seaborn, Omniscope};
+
+\draw[fleche_spec, dashed] (extraire.south) -- (outil_collecte.north);
+\draw[fleche_spec, dashed] (ipcc.south) -- (outil_collecte.north);
+\draw[fleche_spec, dashed] (regrouper.south) -- (outil_prep.north);
+\draw[fleche_spec, dashed] (normaliser.south) -- (outil_prep.north);
+\draw[fleche_spec, dashed] (emission.south) -- (outil_trait.north);
+\draw[fleche_spec, dashed] (assoc.south) -- (outil_trait.north);
+\draw[fleche_spec, dashed] (heatmap.south) -- (outil_rest.north);
+\draw[fleche_spec, dashed] (topbar.south) -- (outil_rest.north);
+
+% Légende
+\node[tache_gen, text width=0.6cm, minimum height=0.3cm] at (3,-4.2) {\tiny TG};
+\node[anchor=west, font=\tiny] at (3.5,-4.2) {Tâche gén.};
+\node[tache_spec, text width=0.6cm, minimum height=0.3cm] at (6,-4.2) {\tiny TS};
+\node[anchor=west, font=\tiny] at (6.5,-4.2) {Tâche spéc.};
+\node[outil, text width=0.6cm, minimum height=0.3cm] at (9,-4.2) {\tiny O};
+\node[anchor=west, font=\tiny] at (9.5,-4.2) {Outils};
+\end{tikzpicture}
+
+\caption{Schéma de la chaîne 3 -- Analyse sectorielle des émissions}
+\label{fig:chaine3}
+\end{figure}
+
+\clearpage
+
+% =====================================================================
+% 3. DESCRIPTION DES DONNÉES
 % =====================================================================
 \section{Description des Données}
 
@@ -125,7 +603,7 @@ Ce rapport présente l'exploration des données dans le cadre de l'étude des li
 \textbf{Caractéristique} & \textbf{EDGAR} & \textbf{GBD 2023} \\
 \midrule
 Nombre de pays & 215 & 204 \\
-Période & 1970--2022 & 1990--2023 \\
+Période & 1970--2022 & 1980--2023 \\
 Variables & 9 polluants & 5 maladies \\
 Granularité & Pays, année, secteur & Pays, année, sexe \\
 Unité & Kilotonnes (kt) & Taux pour 100 000 hab. \\
@@ -147,8 +625,6 @@ Unité & Kilotonnes (kt) & Taux pour 100 000 hab. \\
     \item \textbf{OC} : Carbone organique
 \end{enumerate}
 
-\clearpage
-
 \subsection{Maladies respiratoires (GBD)}
 
 \begin{enumerate}[noitemsep]
@@ -159,6 +635,7 @@ Unité & Kilotonnes (kt) & Taux pour 100 000 hab. \\
     \item Maladies pulmonaires interstitielles
 \end{enumerate}
 
+\clearpage
 % =====================================================================
 % 3. QUALITÉ DES DONNÉES
 % =====================================================================
@@ -180,7 +657,7 @@ L'analyse des valeurs manquantes révèle une excellente complétude des donnée
 La jointure des deux sources de données (EDGAR et GBD) a été réalisée sur :
 \begin{itemize}[noitemsep]
     \item Le code ISO à 3 lettres des pays (197 pays communs)
-    \item L'année (période commune : 1990--2022)
+    \item L'année (période commune : 1980--2022)
 \end{itemize}
 
 Le dataset final contient \textbf{38 millions d'observations} après jointure complète, et \textbf{63 445 observations} après agrégation par pays-année.
@@ -203,7 +680,7 @@ La figure \ref{fig:emissions_dist} montre la distribution des émissions pour ch
     \label{fig:emissions_dist}
 \end{figure}
 
-\clearpage
+\clearpage % graphiques et texte séparés sinon
 
 \subsection{Comparaison hommes/femmes}
 
@@ -240,7 +717,7 @@ L'analyse par sexe révèle des différences significatives dans les taux de mor
     \item L'Oxide de Carbone (CO) est le polluant le plus présent
 \end{itemize}
 
-\subsection{Tendances des décès (1990--2022)}
+\subsection{Tendances des décès (1980--2022)}
 
 \begin{figure}[H]
     \centering
@@ -281,6 +758,39 @@ Les plus grands émetteurs sont la Chine, les États-Unis, l'Inde et la Russie, 
     \caption{Top 15 des pays par taux de mortalité respiratoire}
     \label{fig:top_deaths}
 \end{figure}
+
+\subsection{Cartographie des maladies respiratoires}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/diseases_countries.png}
+    \caption{Distribution géographique des taux de mortalité (cancer de la trachée et MPOC)}
+    \label{fig:map_diseases}
+\end{figure}
+
+\textbf{Observations :}
+\begin{itemize}[noitemsep]
+    \item Le cancer de la trachée présente des taux élevés en Europe de l'Est, Amérique du Nord et Océanie
+    \item La MPOC touche particulièrement l'Asie du Sud-Est (Chine, Inde) et certains pays africains
+    \item Les pays développés montrent des patterns différents selon la maladie
+\end{itemize}
+
+\subsection{Cartographie des émissions de polluants}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/pollutants_countries.png}
+    \caption{Distribution géographique des émissions (PM2.5, PM10, NH3, OC)}
+    \label{fig:map_pollutants}
+\end{figure}
+
+\textbf{Observations :}
+\begin{itemize}[noitemsep]
+    \item La Chine et les États-Unis dominent pour tous les polluants
+    \item Les particules fines (PM2.5, PM10) montrent des répartitions similaires
+    \item L'ammoniac (NH3) est particulièrement élevé dans les pays à forte activité agricole (Inde, Chine, Brésil, États-Unis, Russie)
+    \item Le carbone organique (OC) suit une distribution proche de celle des particules fines
+\end{itemize}
 
 \clearpage
 % =====================================================================
@@ -395,13 +905,13 @@ Outliers & $<$ 2\% (à traiter) \\
 
 \begin{enumerate}
     \item \textbf{Corrélations significatives} : Des corrélations positives modérées existent entre les polluants atmosphériques et les maladies respiratoires, particulièrement pour les particules fines (PM2.5, PM10), les NVMOC, l'Oxide de Carbone et le cancer du poumon ainsi que les maladies pulmonaires obstructives chroniques (MPOC) .
-    
+
     \item \textbf{Multicolinéarité} : Les polluants sont fortement corrélés entre eux, ce qui nécessitera une attention particulière lors de la modélisation (régularisation, réduction de dimension).
-    
+
     \item \textbf{Disparités géographiques} : Les pays en développement présentent des taux d'émission croissants tandis que les pays développés montrent des tendances à la baisse.
-    
+
     \item \textbf{Différences par sexe} : Les hommes sont plus touchés par les maladies respiratoires, avec des taux de mortalité 2 à 3 fois supérieurs pour le cancer du poumon.
-    
+
     \item \textbf{Évolution temporelle} : Malgré l'augmentation des émissions globales, les taux de mortalité standardisés tendent à diminuer, suggérant l'impact positif des avancées médicales.
 \end{enumerate}
 
