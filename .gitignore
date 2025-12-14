@@ -1,1 +1,10 @@
 .DS_Store
+.vscode/
+model/saved/
+model/__pycache__/
+_minted
+report.aux
+report.lol
+report.log
+report.out
+report.toc

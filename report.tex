@@ -20,7 +20,21 @@
 \usepackage{enumitem}
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
-
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    language=Python,
+    showstringspaces=false,
+    numbers=left,
+    numberstyle=\tiny\color{gray}
+}
+\usepackage{minted}
+\renewcommand{\listingscaption}{Code}
+\renewcommand{\listoflistingscaption}{Liste des codes sources}
 % =====================================================================
 % PAGE SETUP
 % =====================================================================
@@ -89,6 +103,7 @@
 % TABLE OF CONTENTS
 % ---------------------------------------------------------------------
 \tableofcontents
+\listoflistings
 \newpage
 
 % =====================================================================
@@ -181,9 +196,9 @@ Le projet se fixe plusieurs objectifs métier :
 
 \begin{enumerate}
     \item \textbf{Identification des zones prioritaires} : grâce à une démarche de data mining, identifier les zones géographiques où les marges de réduction de la pollution sont les plus fortes et où les interventions publiques peuvent avoir un impact significatif.
-    
+
     \item \textbf{Réduction de l'incidence} : proposer des solutions permettant de réduire l'incidence des maladies respiratoires de 5\% dans les zones les plus sensibles, et de diminuer de 10\% les émissions des polluants les plus dangereux pour la santé.
-    
+
     \item \textbf{Identification des polluants critiques} : identifier les polluants ayant l'impact le plus important sur la santé respiratoire à l'échelle mondiale.
 \end{enumerate}
 
@@ -192,6 +207,7 @@ Le projet se fixe plusieurs objectifs métier :
 % 6. JEUX DE DONNÉES
 % =====================================================================
 \section{Jeux de Données}
+\label{sec:jeux-de-donnees}
 
 Pour répondre à ces objectifs, deux principaux jeux de données externes ont été identifiés.
 
@@ -879,9 +895,9 @@ La matrice de corrélation entre polluants et maladies respiratoires constitue l
 
 \clearpage
 % =====================================================================
-% 9. SYNTHÈSE ET CONCLUSIONS
+% 9. SYNTHÈSE AE
 % =====================================================================
-\section{Synthèse et Conclusions}
+\section{Synthèse de l'Analyse Exploratoire}
 
 \subsection{Qualité des données}
 
@@ -924,6 +940,402 @@ Outliers & $<$ 2\% (à traiter) \\
     \item Utiliser des modèles de panel pour exploiter la dimension temporelle
     \item Tester des modèles avec décalage temporel (lag) entre exposition et maladie
 \end{itemize}
+
+
+\clearpage
+% =====================================================================
+% PARTIE III : DATA PREPARATION
+% =====================================================================
+\part{Data Preparation}
+
+\section{Jeux de données (rappel)}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{EDGAR} : \url{https://edgar.jrc.ec.europa.eu/}
+    \item \textbf{GBD 2023} : \url{https://ghdx.healthdata.org/gbd-2023}
+\end{itemize}
+
+Pour plus de précisions, voir la section \hyperref[sec:jeux-de-donnees]{Jeux de Données}.
+
+\section{Extraction des données}
+
+Les données étant statiques et n'ayant pas pour but d'être récoltées périodiquement, elles ont simplement été téléchargées à la main depuis les sources respectives. Pour les données du dataset \emph{EDGAR}, il a suffit de télécharger les différents fichiers Excel correspondant à chaque polluant sur le site de la Commission Européenne. Pour les données du dataset \emph{GBD}, nous avons dû remplir plusieurs formulaires par paquets en prenant soin de sélectionner les mêmes critères de mesures afin de ne pas excéder les quotas, la réponse à notre demande d'extension des dits quotas étant arrivée assez tardivement.
+
+\clearpage
+\section{Prétraitement des données}
+
+\subsection{Fusion des données}
+
+La partie la plus considérable de l'étape de préparation des données s'est portée sur la création d'un dataset unique et cohérent à partir des données extraites. Ce travail a été effectué avant l'exploration des données : en effet, il est nécessaire de fusionner les données des différents datasets pour pouvoir les exploiter ensemble. Nous avons utilisé la bibliothèque \emph{Polars} de Python pour effectuer cette fusion. En effet, malgré notre plus grande maîtrise de la bibliothèque \emph{Pandas}, nous avons choisi d'utiliser \emph{Polars} en raison de son efficacité et de sa capacité à gérer plus rapidement et efficacement des données relativement volumineuses. Cet outil, écrit en Rust, offre des performances bien supérieures et une syntaxe similaire à celle de \emph{Pandas} (bien que parfois plus complexe), ce qui facilite la transition entre les deux bibliothèques. Dans les cas où nos connaissances de Pandas pouvaient permettre des opérations plus rapides (e.g.: avec matplotlib ou seaborn), une simple conversion avec \lstinline{df.to_pandas()} suffit.
+
+Ainsi, polars a été utilisé pour effectuer les opérations suivantes :
+
+
+\begin{listing}[H]
+\caption{Extraction des données EDGAR avec Polars}
+\label{lst:edgar_extraction}
+\begin{minted}[frame=single, linenos, breaklines]{python}
+import polars as pl
+
+edgar_dirs = [d for d in Path('data/EDGAR').iterdir() if d.is_dir()]
+
+poll_dfs = {}
+
+for subdir in edgar_dirs:
+    df = pl.read_excel(
+        list(subdir.glob('*.xlsx'))[0], engine='calamine',
+        read_options={"header_row": 9}
+    )
+    poll_dfs[code.lower()] = df
+
+edgar = pl.concat(
+    [df.with_columns(pl.lit(name).alias("Pollutant")) for name, df in poll_dfs.items()],
+    how="vertical"
+)
+\end{minted}
+\end{listing}
+
+L'extraction des données GBD se fait de manière similaire. Un challenge a été les noms de pays : afin de fusionner les données EDGAR et GBD, nous devions joindre sur les années et les pays. Or, si EDGAR nous fournit des noms de pays en anglais et des codes ISO 3166-1 alpha-3, soit une catégorisation propre, GBD lui nous fournit des noms de pays en français mal traduit. En effet, même en naviguant le site en anglais avec un navigateur en anglais, le dataset GBD renvoie des noms de pays en français avec une traduction automatique. Ce qui donne des apostrophes mal encodés, des articles de manière aléatoire (e.g.: France, Espagne, mais "\textit{La Chine}"). Cela nous a forcé à créer une table de traduction des noms de pays en français vers ceux en anglais, à la main, dans un dictionnaire \lstinline{country_mapping} exporté dans un fichier CSV.
+
+\clearpage
+Une fois cela fait, il ne restait plus qu'à dépivoter les années du dataset EDGAR (qui étaient des colonnesau format \lstinline{Y_NNNN}) et à fusionner les datasets, ce qui nous donne un énorme dataset qui regroupe sur une ligne pour chaque pays, chaque année, chaque polluant, chaque maladie et chaque industrie les émissions du polluant et les morts causés par la maladie. Ce dataset brut est intéressant pour une analyse préliminaire, mais il est nécessaire d'ensuite grouper les données simplement par pays, années et polluant pour obtenir un dataset plus exploitable.
+
+
+\begin{listing}[H]
+\caption{Aggrégation du dataset combiné pour la corrélation}
+\label{lst:combined_to_corr}
+\begin{minted}[frame=single, linenos, breaklines]{python}
+emissions_agg = (
+    combined2
+    .group_by(['gbd_location', 'Country_code_A3', 'year', 'Pollutant'])
+    .agg(pl.col('emission_value').sum().alias('total_emission'))
+    .pivot(on='Pollutant', index=['gbd_location', 'Country_code_A3', 'year'], values='total_emission')
+)
+
+...
+
+correlation_data = emissions_agg.join(
+    deaths_agg,
+    on=['gbd_location', 'Country_code_A3', 'year'],
+    how='inner'
+)
+
+correlation_data.write_parquet('data/combined/correlation_ready.parquet')
+\end{minted}
+\end{listing}
+
+\begin{listing}[H]
+Joined data for correlation: (8471, 17)
+
+Countries: 197
+
+Years: 43
+
+Countries with ISO codes: 197
+
+shape: (5, 17)
+\end{listing}
+
+C'est à partir de ce dataset que nous avons obtenu notre matrice de corrélation et c'est à partir de celui-ci que nous avons commencé à développer notre modèle.
+
+\subsection{Stockage des données}
+
+Le dataset brut étant assez lourd, pour optimiser le stockage, nous avons utilisé le format \emph{Parquet} afin de pouvoir facilement stocker, charger et manipuler les données. Cela permettait en outre de rendre plus facile le partage de ces fichiers, évitant des fichiers CSV de plusieurs gigaoctets contre seulement quelques mégaoctets.
+
+Le format \emph{Parquet}, un format binaire ouvert, est particulièrement adapté à notre utilisation de Polars, étant donné qu'il est supporté nativement et peut donc être lu et transformé en dataframe d'un simple appel à la méthode \lstinline{read_parquet}. Sa structure columnaire stocke les données par colonnes plutôt que par lignes, ce qui est idéal pour les opérations analytiques où seules certaines colonnes sont nécessaires, réduisant ainsi les entrées-sorties. Contrairement aux fichiers texte comme le CSV, le caractère binaire de Parquet permet une compression avancée et une lecture plus rapide.
+
+
+
+\subsection{Chaîne de valeur du prétraitement des données}
+
+Une chaîne de valorisation a été identifiée pour la phase de préparation des données, regroupant l'extraction, le nettoyage, la fusion et le stockage.
+
+\subsubsection{Chaîne 4 -- Préparation et intégration des données}
+
+\textbf{Objectif :} Construire un dataset unifié, cohérent et optimisé à partir des sources EDGAR et GBD pour permettre les analyses exploratoires et la modélisation.
+
+\begin{table}[H]
+\centering
+\caption{Chaîne 4 -- Préparation et intégration des données}
+\begin{tabular}{p{3.5cm}p{5.5cm}p{4.5cm}}
+\toprule
+\textbf{Tâche générique (TG)} & \textbf{Tâches spécifiques (TS)} & \textbf{Outils} \\
+\midrule
+TG41 -- Extraction des données brutes & Télécharger les fichiers Excel EDGAR (par polluant), télécharger les CSV GBD (par paquets, respect des quotas), charger les fichiers avec Polars & Python, Polars (read\_excel, read\_csv), calamine \\
+\midrule
+TG42 -- Nettoyage et Harmonisation & Créer le mapping des noms de pays FR$\rightarrow$EN, harmoniser les codes ISO 3166-1 alpha-3, traiter les valeurs manquantes et les apostrophes mal encodées & Polars, dictionnaire Python, CSV \\
+\midrule
+TG43 -- Transformation et Fusion & Dépivoter les colonnes années EDGAR (Y\_NNNN), joindre EDGAR et GBD sur pays/année, agréger par pays/année/polluant pour la corrélation & Polars (unpivot, join, group\_by, pivot) \\
+\midrule
+TG44 -- Stockage et Export & Exporter les datasets en format Parquet (compression, performance), vérifier l'intégrité des données & Polars (write\_parquet) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1, transform shape]
+\node[tache_gen] (extraction) at (0,0) {Extraction};
+\node[tache_gen] (nettoyage) at (4,0) {Nettoyage};
+\node[tache_gen] (transformation) at (8,0) {Transform.};
+\node[tache_gen] (stockage) at (12,0) {Stockage};
+
+\draw[fleche] (extraction) -- (nettoyage);
+\draw[fleche] (nettoyage) -- (transformation);
+\draw[fleche] (transformation) -- (stockage);
+
+\node[tache_spec] (edgar_dl) at (-1,-1.5) {Téléch. EDGAR};
+\node[tache_spec] (gbd_dl) at (1,-1.5) {Téléch. GBD};
+\node[tache_spec] (mapping) at (3,-1.5) {Mapping pays};
+\node[tache_spec] (iso) at (5,-1.5) {Codes ISO};
+\node[tache_spec] (unpivot) at (7,-1.5) {Dépivoter années};
+\node[tache_spec] (join) at (9,-1.5) {Joindre datasets};
+\node[tache_spec] (parquet) at (11,-1.5) {Export Parquet};
+\node[tache_spec] (verif) at (13,-1.5) {Vérif. intégrité};
+
+\draw[fleche_spec] (extraction.south) -- (edgar_dl.north);
+\draw[fleche_spec] (extraction.south) -- (gbd_dl.north);
+\draw[fleche_spec] (nettoyage.south) -- (mapping.north);
+\draw[fleche_spec] (nettoyage.south) -- (iso.north);
+\draw[fleche_spec] (transformation.south) -- (unpivot.north);
+\draw[fleche_spec] (transformation.south) -- (join.north);
+\draw[fleche_spec] (stockage.south) -- (parquet.north);
+\draw[fleche_spec] (stockage.south) -- (verif.north);
+
+\node[outil] (outil_extract) at (0,-3) {\scriptsize Polars, calamine};
+\node[outil] (outil_clean) at (4,-3) {\scriptsize Polars, CSV};
+\node[outil] (outil_transform) at (8,-3) {\scriptsize Polars (join, pivot)};
+\node[outil] (outil_store) at (12,-3) {\scriptsize Parquet};
+
+\draw[fleche_spec, dashed] (edgar_dl.south) -- (outil_extract.north);
+\draw[fleche_spec, dashed] (gbd_dl.south) -- (outil_extract.north);
+\draw[fleche_spec, dashed] (mapping.south) -- (outil_clean.north);
+\draw[fleche_spec, dashed] (iso.south) -- (outil_clean.north);
+\draw[fleche_spec, dashed] (unpivot.south) -- (outil_transform.north);
+\draw[fleche_spec, dashed] (join.south) -- (outil_transform.north);
+\draw[fleche_spec, dashed] (parquet.south) -- (outil_store.north);
+\draw[fleche_spec, dashed] (verif.south) -- (outil_store.north);
+
+% Légende
+\node[tache_gen, text width=0.6cm, minimum height=0.3cm] at (3,-4.2) {\tiny TG};
+\node[anchor=west, font=\tiny] at (3.5,-4.2) {Tâche gén.};
+\node[tache_spec, text width=0.6cm, minimum height=0.3cm] at (6,-4.2) {\tiny TS};
+\node[anchor=west, font=\tiny] at (6.5,-4.2) {Tâche spéc.};
+\node[outil, text width=0.6cm, minimum height=0.3cm] at (9,-4.2) {\tiny O};
+\node[anchor=west, font=\tiny] at (9.5,-4.2) {Outils};
+\end{tikzpicture}
+
+\caption{Schéma de la chaîne 4 -- Préparation et intégration des données}
+\label{fig:chaine4}
+\end{figure}
+
+\clearpage
+\section{Préparation pour la modélisation}
+
+Une fois le dataset fusionné et stocké au format Parquet, les données doivent être préparées pour la modélisation prédictive. Cette étape comprend le chargement des données, l'application de transformations, la gestion des valeurs manquantes, la normalisation des features et la séparation train/test.
+
+\subsection{Décalage temporel (Lag)}
+
+Un point clef de la préparation pour la modélisation est l'introduction d'un décalage temporel entre les émissions (variables explicatives) et les décès (variable cible). En effet, il existe un délai biologique entre l'exposition à la pollution atmosphérique et le développement de maladies respiratoires. Dans notre cas, les données sont préparées de telle sorte que les émissions de l'année $t$ prédisent les décès de l'année $t + lag$, où \lstinline{lag} est le nombre d'années considérées.
+
+Dans les faits, le décalage temporel a été testé et n'a pas permis d'améliorer les performances du modèle. Nous avons donc décidé de garder la fonctionnalité, mais de ne pas l'utiliser en choisissant un lag égal à zéro. Les résultats des tests de lag sont présentés ci-dessous :
+
+\begin{listing}[H]
+\caption{Analyse des décalages temporels par maladie}
+\label{lst:lag_analysis}
+\begin{minted}[frame=single, linenos, breaklines, fontsize=\small]{text}
+LAG ANALYSIS BY DISEASE
+============================================================
+
+Random State: 1
+
+Lung Cancer:
+  Lag 0 years | R² = 0.8567
+  Lag 3 years | R² = 0.8625
+  Lag 6 years | R² = 0.8720
+  Lag 9 years | R² = 0.8660
+
+Pneumoconiosis:
+  Lag 0 years | R² = 0.8058
+  Lag 3 years | R² = 0.7868
+  Lag 6 years | R² = 0.7367
+  Lag 9 years | R² = 0.7928
+
+COPD:
+  Lag 0 years | R² = 0.7937
+  Lag 3 years | R² = 0.7811
+  Lag 6 years | R² = 0.7924
+  Lag 9 years | R² = 0.8119
+
+...
+\end{minted}
+\end{listing}
+
+Comme montré dans la sortie de script ci-dessus, les performances varient légèrement selon le décalage temporel choisi, mais aucun pattern consistant n'émerge. Un décalage de 0 années fournit un bon équilibre et reste notre choix par défaut.
+
+\clearpage
+\subsection{Gestion des valeurs manquantes}
+
+Le dataset combiné contient quelques valeurs manquantes dûes aux enregistrements manquants pour les émissions de polluants dans certains pays certaines années.
+
+Nous avons opté pour la stratégie la plus simple et la plus robuste : \textbf{supprimer les lignes contenant des valeurs manquantes}. Cette approche, bien qu'elle réduise la taille du dataset, garantit la qualité des données utilisées pour le modèle et évite les artefacts introduits par l'imputation.L'imputation remplace les valeurs manquantes par une estimation statistique fixe calculée sur l'ensemble de la colonne, comme la moyenne, la médiane ou la valeur la plus fréquente. L'interpolation est une autre méthode possible, elle consiste à deviner la valeur manquante en observant la tendance des valeurs voisines (juste avant et juste après), souvent de manière linéaire. Elle est particulièrement adaptée aux séries temporelles, mais peut introduire des artefacts si les données sont bruitées ou si la tendance n'est pas linéaire.
+
+\subsection{Transformations des features}
+
+\subsubsection{Transformation logarithmique}
+
+Les émissions de polluants présentent souvent une distribution asymétrique avec des valeurs aberrantes. Pour normaliser cette distribution et réduire l'influence des valeurs extrêmes, nous appliquons une transformation logarithmique :
+
+\[
+x'_i = \log(1 + x_i)
+\]
+
+où $x_i$ est l'émission du polluant $i$. La constante additive 1 (log1p) permet de gérer les valeurs zéro ou très proches de zéro sans générer d'erreurs numériques.
+
+\subsubsection{Normalisation des features}
+
+Après la transformation logarithmique, nous normalisons et rédusions toutes les features à l'aide d'un \lstinline{StandardScaler} du framework de machine-learning \emph{scikit-learn}. Cette normalisation ramène les features à une moyenne de 0 et un écart-type de 1 :
+
+\[
+x'_i = \frac{x_i - \mu}{\sigma}
+\]
+
+où $\mu$ et $\sigma$ sont la moyenne et l'écart-type estimés sur l'ensemble d'entraînement. Cette étape est essentielle pour les modèles sensibles à l'échelle (régression linéaire, réseaux de neurones, etc.).
+
+\clearpage
+\subsection{Sélection des features et cibles}
+
+Pour la modélisation, nous utilisons les neuf polluants comme features explicatives :
+\begin{itemize}[noitemsep]
+    \item CO (Monoxyde de carbone)
+    \item SO\textsubscript{2} (Dioxyde de soufre)
+    \item NO\textsubscript{x} (Oxydes d'azote)
+    \item NMVOC (Composés organiques volatils non méthaniques)
+    \item PM\textsubscript{2.5} (Particules fines)
+    \item PM\textsubscript{10} (Particules grossières)
+    \item NH\textsubscript{3} (Ammoniac)
+    \item BC (Carbone noir)
+    \item OC (Carbone organique)
+\end{itemize}
+
+Pour les cibles (variables à prédire), nous avons sélectionné trois maladies respiratoires principales basées sur l'analyse exploratoire :
+\begin{itemize}[noitemsep]
+    \item \textbf{Lung Cancer} : Cancer de la trachée, des bronches et des poumons
+    \item \textbf{Pneumoconiosis} : Pneumoconiose
+    \item \textbf{COPD} : Maladie pulmonaire obstructive chronique
+\end{itemize}
+
+Les deux autres maladies (Asthme et Autres maladies respiratoires chroniques) ont été exclues car l'analyse exploratoire n'a révélé aucune corrélation significative avec les polluants étudiés.
+
+\subsection{Séparation train/test}
+
+Le dataset est divisé en deux ensembles :
+\begin{itemize}[noitemsep]
+    \item \textbf{Ensemble d'entraînement} (80\%) : utilisé pour ajuster les paramètres du modèle et calibrer le \lstinline{StandardScaler}
+    \item \textbf{Ensemble de test} (20\%) : utilisé pour évaluer les performances du modèle sur des données non vues pendant l'entraînement
+\end{itemize}
+
+Cette séparation en 80/20 est assez standard et permet une évaluation fiable des performances du modèle dans la grande majorité des cas.
+
+\subsection{Implémentations}
+
+Deux versions de la pipeline de préparation ont été implémentées dans le module \lstinline{model.data_prep} :
+
+\begin{itemize}[noitemsep]
+    \item \textbf{\lstinline{prepare_data()}} : pour scikit-learn, retournant un objet \lstinline{PreparedData} avec les arrays NumPy
+    \item \textbf{\lstinline{prepare_data_torch()}} : pour PyTorch, retournant un objet \lstinline{PreparedDataTorch} avec les tensors PyTorch
+\end{itemize}
+
+Les deux versions partagent la même logique de préparation et de normalisation, garantissant la cohérence entre les deux frameworks.
+
+\subsection{Analyse des scenarii}
+
+Le module inclut également des fonctions qui nous seront utiles dans la partie modélisation pour l'analyse de scenarii post-modélisation (\lstinline{get_baseline_emissions()}, \lstinline{create_scenario_features()}), permettant d'évaluer l'impact de réductions d'émissions sur la mortalité prédite. Cela facilite l'interprétabilité du modèle et le support à la décision.
+
+\clearpage
+\section{Synthèse de la préparation des données}
+
+La préparation des données est une étape cruciale dans le processus qui doit aboutir à la modélisation. Une donnée mal préparée peut complètement ruiner un modèle. Il est donc capital de passer par les étapes de compréhension business, compréhension des données et de préparation des données, dans cet ordre. Bien qu'une partie de ce processus s'effecture dans le cadre de la compréhension des données, il faut noter que les objectifs sont différents : c'est pourquoi nous avons deux jeux de données : un pour l'exploration plus globale (plus fourni car encore à défricher) et un pour des observations plus fines et pour la modélisation (plus compact car déjà pré-traité). Le dataset utilisé pour la modélisation est le suivant :
+
+\begin{listing}[H]
+\caption{Sortie du script de préparation des données et présentation du dataset final}
+\label{lst:final-dataset}
+\begin{minted}[frame=single, linenos, breaklines, fontsize=\small]{text}
+
+Saved aggregated dataset: 8,471 rows × 17 columns
+File: data/combined/correlation_ready.parquet
+
+Columns: ['gbd_location', 'Country_code_A3', 'year', 'pm10', 'oc', 'nmvoc', 'nox', 'pm25', 'nh3', 'co', 'so2', 'bc', 'Asthme', 'Cancer de la trachée, des bronches et des poumons', 'Pneumoconiose', 'Autres maladies respiratoires chroniques', 'Maladie pulmonaire obstructive chronique']
+
+\end{minted}
+\end{listing}
+
+% ==================================================
+% PARTIE IV: MODELIZATION
+% ==================================================
+\clearpage
+\part{Modelization}
+
+\section{Réflexions préliminaires}
+
+\subsection{Modèles, machine-learning et deep-learning}
+
+L'étape du modèle du framework CRISP-DM implique la réflexion autour de modèles mathématiques permettant d'exprimer des relations entre nos données, relations qui peuvent s'avérer complexes et difficiles à identifier à l'œil nu. Ces modèles plus ou moins complexes, peuvent notamment se baser sur des méthodes statistiques ou des approches d'apprentissage automatique. Ces modèles sont stochastiques, c'est-à-dire non-déterministes. Ainsi, deux exécutions du même modèle avec les mêmes données mais des initialisations différentes peuvent produire des résultats différents, d'où l'importance d'une graine aléatoire (\lstinline{random_state}) fixée pour assurer la reproductibilité.
+
+L'apprentissage automatique (\textit{machine learning}) regroupe des algorithmes qui apprennent automatiquement à partir des données sans être explicitement programmés. Ces algorithmes cherchent à identifier des patterns dans les données pour faire des prédictions sur de nouvelles données. On distingue plusieurs catégories : la régression (prédire une valeur continue), la classification (prédire une catégorie), le clustering (grouper les données), etc. Des exemples courants incluent la régression linéaire, les arbres de décision, les forêts aléatoires et les machines à vecteurs de support (SVM). Ces modèles sont généralement interprétables et relativement rapides à entraîner.
+
+L'apprentissage profond (\textit{deep learning}) est un sous-ensemble du machine learning basé sur les réseaux de neurones artificiels (artificial neural networks). Contrairement aux modèles classiques, les réseaux de neurones apprennent des représentations hiérarchiques des données, où chaque couche du réseau transforme les données en abstractions de plus en plus complexes. Bien que les réseaux de neurones soient plus exigeants en termes de données et de puissance de calcul, ils peuvent capturer des relations non-linéaires très complexes et sont particulièrement efficaces pour les données de haute dimension.
+
+Dans notre contexte de prédiction de mortalité due à la pollution, nous explorons à la fois des modèles classiques de machine learning (pour l'interprétabilité et la performance) et des approches de deep learning (pour la flexibilité et la capacité à modéliser des relations complexes potentiellement cachées dans les données). Nous avons de prime abord choisi cette approche à des fins éducatives : à la fois dans le but de pratiquer ces différentes techniques et d'identifier leurs différences une fois mis en application, mais également pour démontrer leurs forces et leurs faiblesses.
+
+\subsection{Technologies choisies}
+
+Afin de mettre en œuvre un algorithme de machine learning, nous nous sommes dirigés vers la bilbiothèque \emph{scikit-learn}. \textit{sklearn}, de son nom abrégé, est une bibliothèque Python open-source qui implémente de nombreux algorithmes de machine learning. C'est le standard dans l'industrie et du côté de la recherche pour le machine learning dit "classique", de la préparation des données à la modélisation. Scikit-learn et les algorithmes de machine learning qu'il implémente sont particulièrement adaptés aux problèmes de régression sur des données tabulaires comme le notre. \emph{PyTorch}, quant à elle, est une bibliothèque Python open-source développée par Meta pour le deep learning. 
+
+PyTorch n'est a priori pas l'outil idéal pour traiter un problème de régression simple comme le notre : il peut fonctionner, mais l'intérêt des réseaux de neurones se situe dans leur capacité à représenter les données d'une manière beaucoup plus complexe, par exemple en utilisant des couches de convolution pour traiter des images. Ayant déjà travaillé avec ces deux bibliothèques, nous savons donc que PyTorch introduit une complexité supplémentaire qui n'est a priori pas nécessaire pour notre problème. Cependant, toujours pour des raisons éducatives, nous avons décidé de traiter les deux, avec un réseau de neurones basique pour PyTorch et un modèle d'arbres de décision pour scikit-learn. Nous aurons donc deux modèles, et en réalité plus que cela en raison des différentes variables cibles.
+
+\subsection{Méthodes d'évaluation d'un modèle}
+
+Il existe une multitude de méthodes pour évaluer de prime abord les performances d'un modèle. Les deux que nous verrons ici sont l'écart quadratique moyen (RMSE, pour \textit{Root Mean Squared Error}) et le coefficient de détermination (R²), qui divise la somme des erreurs du modèle (ou résidus) au carré, par la variance du jeu de données, afin de mesurer la qualité de la prédiction.
+
+\begin{equation}
+RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(\hat{y}_i - y_i)^2}
+\end{equation}
+
+
+
+\begin{equation}
+R^2 = \frac{\sum_{i=1}^{n}(\hat{y}_i - \bar{y})^2}{\sum_{i=1}^{n}(y_i - \bar{y})^2}
+\end{equation}
+
+$\hat{y}_i$: la prédiction du modèle pour la donnée $i$
+
+$y_i$: la valeur réelle de la donnée $i$
+
+$\bar{y}$: la moyenne des valeurs réelles
+
+% https://www.datacamp.com/tutorial/regression-sum-of-squares
+% 
+\section{Implémentation itérative des modèles}
+
+\subsection{Modèle de machine learning scikit-learn}
+
+Dans un premier temps, le temps de calcul et l'écriture du code étant très rapide avec scikit-learn une fois nos données prétraitées et nos features/targets définies, nous avons décidé de comparer plusieurs algorithmes de machine learning pour trouver le meilleur modèle. Nous avons utilisé les algorithmes suivants : 
+
+\begin{itemize}
+    \item Ridge (régression linéaire)
+    \item Forêts aléatoires
+    \item Boost de Gradients
+\end{itemize}
+
+\subsubsection{Ridge}
+
+
+
+\clearpage
+\section{Conclusion générale}
+
+
 
 % =====================================================================
 % BIBLIOGRAPHY (optional)

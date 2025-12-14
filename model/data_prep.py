@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from dataclasses import dataclass
 from typing import Tuple, List, Optional
 from pathlib import Path
+import torch
 
 
 
@@ -13,25 +14,27 @@ DATA_PATH = PROJECT_ROOT / "data" / "combined" / "correlation_ready.parquet"
 
 
 POLLUTANTS = ['bc', 'co', 'nh3', 'nmvoc', 'nox', 'oc', 'pm10', 'pm25', 'so2']
-FEATURES = POLLUTANTS + ['year']
+FEATURES = POLLUTANTS
 
 DISEASES = [
     'Cancer de la trachée, des bronches et des poumons',
     'Pneumoconiose',
     'Maladie pulmonaire obstructive chronique',
-    'Asthme',
-    'Autres maladies respiratoires chroniques',
+    #'Asthme',
+    #'Autres maladies respiratoires chroniques',
 ]
 
 DISEASE_SHORT_NAMES = {
     'Cancer de la trachée, des bronches et des poumons': 'Lung Cancer',
     'Pneumoconiose': 'Pneumoconiosis',
     'Maladie pulmonaire obstructive chronique': 'COPD',
-    'Asthme': 'Asthma',
-    'Autres maladies respiratoires chroniques': 'Other Chronic Resp.',
+    # No correlation found between asthmat/other chronic resp. diseases
+    # and pollution from data analysis (see data_understanding.ipynb)
+    #'Asthme': 'Asthma',
+    #'Autres maladies respiratoires chroniques': 'Other Chronic Resp.',
 }
 
-DEFAULT_LAG_YEARS = 5
+DEFAULT_LAG_YEARS = 0
 DEFAULT_TEST_SIZE = 0.2
 RANDOM_STATE = 1
 
@@ -157,14 +160,25 @@ def prepare_data(
     """
     df = create_lagged_dataset(load_data(), lag_years=lag_years)
     
+    # Option 1: Drop rows with NaN values (most straightforward)
+    df = df.drop_nulls(subset=feature_names + [target_disease])
+    
+    # Option 2: Imputation - fill NaN with median (more robust to outliers)
+    # df = df.with_columns([
+    #     pl.col(col).fill_null(pl.col(col).median()) for col in feature_names + [target_disease]
+    # ])
+    
+    # Option 3: Interpolation - fill based on neighboring values (good for time series)
+    #df = df.sort(['gbd_location', 'year']).with_columns([
+    #    pl.col(col).interpolate() for col in feature_names + [target_disease]
+    #])
+    
+    
     # Apply log transform if requested
     if log_transform:
         df = df.with_columns([
             pl.col(poll).log1p().alias(poll) for poll in POLLUTANTS
         ])
-    
-    # Drop rows with NaN values
-    df = df.drop_nulls(subset=feature_names + [target_disease])
     
     # Select features and target
     X = df.select(feature_names).to_numpy()
@@ -218,6 +232,20 @@ def prepare_data_torch(
     import torch
     
     df = create_lagged_dataset(load_data(), lag_years=lag_years)
+    
+    # Option 1: Drop rows with NaN values (most straightforward)
+    df = df.drop_nulls(subset=feature_names + [target_disease])
+    
+    # Option 2: Imputation - fill NaN with median (more robust to outliers)
+    # df = df.with_columns([
+    #     pl.col(col).fill_null(pl.col(col).median()) for col in feature_names + [target_disease]
+    # ])
+    
+    # Option 3: Interpolation - fill based on neighboring values (good for time series)
+    #df = df.sort(['gbd_location', 'year']).with_columns([
+    #    pl.col(col).interpolate() for col in feature_names + [target_disease]
+    #])
+    
     
     # Apply log transform if requested
     if log_transform:
@@ -288,7 +316,8 @@ def prepare_all_diseases(
             target_disease=disease,
             lag_years=lag_years,
             test_size=test_size,
-            random_state=random_state
+            random_state=random_state,
+            feature_names=FEATURES
         )
         for disease in DISEASES
     }
@@ -395,4 +424,4 @@ if __name__ == "__main__":
         short_name = DISEASE_SHORT_NAMES.get(disease, disease)
         print(f"  {short_name:25s}: {d.n_train_samples:,} train, {d.n_test_samples:,} test")
     
-    print("\n✅ All tests passed!")
+    print("\nAll tests passed.")
