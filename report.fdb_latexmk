@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1765747708.75483 "report.tex" "report.pdf" "report" 1765747712.04296 0
+["pdflatex"] 1765799118.58352 "report.tex" "report.pdf" "report" 1765799121.72562 0
   "/Users/malcolm/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx0600.600pk" 1764760606.409 14768 7950052be01aedcaf664d4791758a029 ""
   "/Users/malcolm/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1000.600pk" 1764694245.58598 25396 5dd07539f8006b4164bfec7e1db83bad ""
   "/Users/malcolm/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1095.600pk" 1764429367.11742 28952 47d6a264a20e911efe0e08752510d297 ""
@@ -54,9 +54,11 @@
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1246382020 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/public/cm/cmex10.tfm" 1136768653 992 662f679a0b3d2d53c1b94050fdaa3f50 ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm" 1136768653 1528 abec98dbc43e172678c11b3b9031252a ""
+  "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/public/cm/cmmi12.tfm" 1136768653 1524 4414a8315f39513458b80dfc63bff03a ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm" 1136768653 1512 f21f83efb36853c0b70002322c1ab3ad ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm" 1136768653 1520 eccf95517727cb11801f4f1aee3a21b4 ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/public/cm/cmr10.tfm" 1136768653 1296 45809c5a464d5f32c8f98ba97c1bb47f ""
+  "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/public/cm/cmr12.tfm" 1136768653 1288 655e228510b4c2a1abe905c368440826 ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/public/cm/cmr6.tfm" 1136768653 1300 b62933e007d01cfd073f79b963c01526 ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/public/cm/cmr8.tfm" 1136768653 1292 21c1c5bfeaebccffdb478fd231a0997d ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm" 1136768653 1124 6c73e740cf17375f03eec0ee63599741 ""
@@ -218,6 +220,7 @@
   "/usr/local/texlive/2025basic/texmf-dist/tex/latex/refcount/refcount.sty" 1576624809 9878 9e94e8fa600d95f9c7731bb21dfb67a4 ""
   "/usr/local/texlive/2025basic/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty" 1657483315 9714 ba3194bd52c8499b3f1e3eb91d409670 ""
   "/usr/local/texlive/2025basic/texmf-dist/tex/latex/titlesec/titlesec.sty" 1736023606 48766 87a17a4ef312a39cd43896e34a679a56 ""
+  "/usr/local/texlive/2025basic/texmf-dist/tex/latex/tocloft/tocloft.sty" 1578692495 36103 3e78d14f0f4b1a30560fea5e04de805d ""
   "/usr/local/texlive/2025basic/texmf-dist/tex/latex/tools/shellesc.sty" 1717359999 4121 6039ae6d0916154d7ba5f20a77b9ab2c ""
   "/usr/local/texlive/2025basic/texmf-dist/tex/latex/upquote/upquote.sty" 1334873510 1048 517e01cde97c1c0baf72e69d43aa5a2e ""
   "/usr/local/texlive/2025basic/texmf-dist/tex/latex/url/url.sty" 1388531844 12796 8edb7d69a20b857904dd0ea757c14ec9 ""
@@ -257,11 +260,11 @@
   "img/over_underfitting.png" 1765738527.87952 61260 5eb443c8ed7b35464b02a1da6087c5a7 ""
   "img/predictions_ann.png" 1765746509.53633 104512 26281abcc077121a1202dccb2047b988 ""
   "img/predictions_gb.png" 1765747376.36088 100989 d05906b7796700cb35b9b3e71ebc0de3 ""
-  "report.aux" 1765747711.88075 25630 95a87ebc864a07a6a8a09572a70edadd "pdflatex"
-  "report.lol" 1765747711.88384 1363 26fad2cadea0c9d6aef19dc514e08ee1 "pdflatex"
-  "report.out" 1765747711.8833 20700 b984a1a374542a1de865718895ccd6b2 "pdflatex"
-  "report.tex" 1765747703.2453 90932 423567f850f21d70458613f6331c588a ""
-  "report.toc" 1765747711.88368 9858 56c5f923faaf8307b6623076f57eb0b8 "pdflatex"
+  "report.aux" 1765799121.56529 25928 fe6a0492644dc4feb0c8572e9e877dfd "pdflatex"
+  "report.lol" 1765799121.56807 1363 6aa7b22ec9e4a5fc3f9992b303589641 "pdflatex"
+  "report.out" 1765799121.56765 21017 d9fba378158feb32240e8389b3ab1251 "pdflatex"
+  "report.tex" 1765799110.70626 91294 50210477bde24c6298e95ce6bd03210a ""
+  "report.toc" 1765799121.56798 10031 e8132e49194df3d5fa118ce51bc2d842 "pdflatex"
   (generated)
   "report.aux"
   "report.log"

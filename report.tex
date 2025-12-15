@@ -35,6 +35,7 @@
 \usepackage{minted}
 \renewcommand{\listingscaption}{Code}
 \renewcommand{\listoflistingscaption}{Liste des codes sources}
+\usepackage{tocloft}
 % =====================================================================
 % PAGE SETUP
 % =====================================================================
@@ -645,7 +646,7 @@ Unité & Kilotonnes (kt) & Taux pour 100 000 hab. \\
 
 \begin{enumerate}[noitemsep]
     \item Cancer de la trachée, des bronches et des poumons
-    \item Maladie pulmonaire obstructive chronique (MPOC)
+    \item Bronchopneumopathie chronique obstructive (BPCO) ou Maladie pulmonaire obstructive chronique dans le dataset
     \item Asthme
     \item Pneumoconioses
     \item Maladies pulmonaires interstitielles
@@ -700,7 +701,7 @@ La figure \ref{fig:emissions_dist} montre la distribution des émissions pour ch
 
 \subsection{Comparaison hommes/femmes}
 
-L'analyse par sexe révèle des différences significatives dans les taux de mortalité. Les hommes présentent des taux plus élevés pour la majorité des maladies respiratoires, notamment pour le cancer du poumon et les MPOC.
+L'analyse par sexe révèle des différences significatives dans les taux de mortalité. Les hommes présentent des taux plus élevés pour la majorité des maladies respiratoires, notamment pour le cancer du poumon et les BPCO.
 
 \begin{figure}[H]
     \centering
@@ -744,7 +745,7 @@ L'analyse par sexe révèle des différences significatives dans les taux de mor
 
 \textbf{Observations clés :}
 \begin{itemize}[noitemsep]
-    \item Diminution globale des taux de mortalité pour les MPOC
+    \item Diminution globale des taux de mortalité pour les BPCO
     \item Stabilité relative du cancer du poumon
     \item Baisse significative de l'asthme mortel
 \end{itemize}
@@ -780,14 +781,14 @@ Les plus grands émetteurs sont la Chine, les États-Unis, l'Inde et la Russie, 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\textwidth]{data_understanding_files/diseases_countries.png}
-    \caption{Distribution géographique des taux de mortalité (cancer de la trachée et MPOC)}
+    \caption{Distribution géographique des taux de mortalité (cancer de la trachée et BPCO)}
     \label{fig:map_diseases}
 \end{figure}
 
 \textbf{Observations :}
 \begin{itemize}[noitemsep]
     \item Le cancer de la trachée présente des taux élevés en Europe de l'Est, Amérique du Nord et Océanie
-    \item La MPOC touche particulièrement l'Asie du Sud-Est (Chine, Inde) et certains pays africains
+    \item La BPCO touche particulièrement l'Asie du Sud-Est (Chine, Inde) et certains pays africains
     \item Les pays développés montrent des patterns différents selon la maladie
 \end{itemize}
 
@@ -864,7 +865,7 @@ La matrice de corrélation entre polluants et maladies respiratoires constitue l
 \begin{itemize}[noitemsep]
     \item PM2.5 et PM10 montrent des corrélations positives modérées avec toutes les maladies
     \item NH3 et OC présentent les corrélations les plus fortes avec le cancer du poumon
-    \item les MPOC est corrélée à la plupart des polluants
+    \item les BPCO est corrélée à la plupart des polluants
 \end{itemize}
 
 \subsection{Matrice de corrélation complète}
@@ -881,7 +882,7 @@ La matrice de corrélation entre polluants et maladies respiratoires constitue l
     \item Forte multicolinéarité entre polluants (r $>$ 0.8 pour la plupart)
     \item Les maladies sont également corrélées entre elles
     \item Ces corrélations suggèrent des facteurs communs (développement économique, urbanisation)
-    \item les MPOC semblent plus corrélées aux polluants que les autres maladies (notamment NMVOC, OC, PM10 et PM25)
+    \item les BPCO semblent plus corrélées aux polluants que les autres maladies (notamment NMVOC, OC, PM10 et PM25)
 \end{itemize}
 
 \subsection{Relations détaillées (scatter plots)}
@@ -920,7 +921,7 @@ Outliers & $<$ 2\% (à traiter) \\
 \subsection{Principales conclusions}
 
 \begin{enumerate}
-    \item \textbf{Corrélations significatives} : Des corrélations positives modérées existent entre les polluants atmosphériques et les maladies respiratoires, particulièrement pour les particules fines (PM2.5, PM10), les NVMOC, l'Oxide de Carbone et le cancer du poumon ainsi que les maladies pulmonaires obstructives chroniques (MPOC) .
+    \item \textbf{Corrélations significatives} : Des corrélations positives modérées existent entre les polluants atmosphériques et les maladies respiratoires, particulièrement pour les particules fines (PM2.5, PM10), les NVMOC, l'Oxide de Carbone et le cancer du poumon ainsi que les bronchopneumopathies chroniques obstructives (BPCO) .
 
     \item \textbf{Multicolinéarité} : Les polluants sont fortement corrélés entre eux, ce qui nécessitera une attention particulière lors de la modélisation (régularisation, réduction de dimension).
 
@@ -1222,7 +1223,7 @@ Pour les cibles (variables à prédire), nous avons sélectionné trois maladies
 \begin{itemize}[noitemsep]
     \item \textbf{Lung Cancer} : Cancer de la trachée, des bronches et des poumons
     \item \textbf{Pneumoconiosis} : Pneumoconiose
-    \item \textbf{COPD} : Maladie pulmonaire obstructive chronique
+    \item \textbf{COPD} : Bronchopneumopathie chronique obstructive
 \end{itemize}
 
 Les deux autres maladies (Asthme et Autres maladies respiratoires chroniques) ont été exclues car l'analyse exploratoire n'a révélé aucune corrélation significative avec les polluants étudiés.
@@ -1296,7 +1297,7 @@ PyTorch n'est a priori pas l'outil idéal pour traiter un problème de régressi
 
 \subsection{Choix des variables}
 
-Dans un premier temps, les variables d'entrées, les features, étaient tous les polluants + les années. Après comparaison, nous avons décidé de ne pas garder les années, car elles peuvent induire une corrélation avec les variables de sorties dûes à d'autres facteurs que nous ne pouvons pas contrôler, comme les avancées de la médecine, de la technologie, etc. Cela aurait pu être pertinent mais nous n'étions pas convaincus que cela améliorerait les résultats. De même, nous avons décidé de ne pas garder l'Asthme et les autres maladies respiratoires, étant donné que la corrélation avec les variables d'entrées était autour de 0 voire légèrement en dessous. Nous nous sommes donc concentrés sur les Maladies pulmonaires obstructives chroniques (MPOC), et dans une moindre mesure sur les cancers de la trachée et des poumons, ainsi que sur les pneumoconioses, qui avaient une corrélation positive avec les variables d'entrées.
+Dans un premier temps, les variables d'entrées, les features, étaient tous les polluants + les années. Après comparaison, nous avons décidé de ne pas garder les années, car elles peuvent induire une corrélation avec les variables de sorties dûes à d'autres facteurs que nous ne pouvons pas contrôler, comme les avancées de la médecine, de la technologie, etc. Cela aurait pu être pertinent mais nous n'étions pas convaincus que cela améliorerait les résultats. De même, nous avons décidé de ne pas garder l'Asthme et les autres maladies respiratoires, étant donné que la corrélation avec les variables d'entrées était autour de 0 voire légèrement en dessous. Nous nous sommes donc concentrés sur les bronchopneumopathies chroniques obstructives (BPCO), et dans une moindre mesure sur les cancers de la trachée et des poumons, ainsi que sur les pneumoconioses, qui avaient une corrélation positive avec les variables d'entrées.
 
 \subsection{Méthodes d'évaluation d'un modèle}
 
@@ -1543,7 +1544,7 @@ for disease in DISEASES:
 
 \subsubsection{Problèmes rencontrés}
 
-Nous avons dû adapter notre modèle pour contrer l'overfitting présent dans notre configuration intiale des hyperparamètres. Nous avons utilisé GridSearchCV afin de tester plusieurs combinaisons et de déterminer les meilleurs hyperparamètres pour le modèle de régression gradient boosting, en nous concentrant en particulier sur les MPOC. Une fois cela fait, nous avons pu obtenir des résultats plus satisfaisants. 
+Nous avons dû adapter notre modèle pour contrer l'overfitting présent dans notre configuration intiale des hyperparamètres. Nous avons utilisé GridSearchCV afin de tester plusieurs combinaisons et de déterminer les meilleurs hyperparamètres pour le modèle de régression gradient boosting, en nous concentrant en particulier sur les BPCO. Une fois cela fait, nous avons pu obtenir des résultats plus satisfaisants.
 
 Toutefois, nous nous sommes heurtés à un problème assez classique en machine learning. Notre modèle est assez précis et il est très bon pour l'interpolation des données, c'est-à-dire pour prédire des valeurs dans une plage de valeurs connues. En revanche, les modèles basés sur des arbres de décisions sont très mauvais en ce qui concerne la prédiction des valeurs hors de la plage de valeurs connues, c'est-à-dire l'extrapolation. Nous avons donc un modèle relativement simple et performant, mais limité pour l'étape suivante qui consistait à créer des scenarii.
 
@@ -1587,7 +1588,7 @@ COPD                      | R² = 0.6374
 \end{minted}
 \end{listing}
 
-En particulier, le modèle se retrouve en difficulté à prédire les maladies pulmonaires obstructives chroniques (COPD). Cela peut être attribué à la complexité des mécanismes physiologiques impliqués dans ces maladies et à la nécessité d'un modèle plus sophistiqué pour prendre en compte ces interactions. 
+En particulier, le modèle se retrouve en difficulté à prédire les bronchopneumopathies chroniques obstructives (COPD). Cela peut être attribué à la complexité des mécanismes physiologiques impliqués dans ces maladies et à la nécessité d'un modèle plus sophistiqué pour prendre en compte ces interactions.
 
 \subsection{Prédictions}
 
@@ -1645,9 +1646,16 @@ Ces résultats illustrent plusieurs points importants :
 \section{Conclusion générale}
 
 
-% =====================================================================
-% BIBLIOGRAPHY (optional)
-% =====================================================================
+
+% ===================================================
+% ANNEXES
+% ===================================================
+\clearpage
+\phantomsection
+\part{Annexes}
+
+\phantomsection
+\addcontentsline{toc}{section}{Références}
 \section*{Références}
 
 \begin{itemize}[noitemsep]
@@ -1659,7 +1667,13 @@ Ces résultats illustrent plusieurs points importants :
     \item Multilayer Perceptron : \url{https://en.wikipedia.org/wiki/Multilayer_perceptron}
     \item scikit-learn API reference : \url{https://scikit-learn.org/stable/api/index.html}
     \item Polars API reference : \url{https://docs.pola.rs/api/python/dev/reference/index.html}
-    
+
 \end{itemize}
 
+\phantomsection
+\addcontentsline{toc}{section}{Remerciements}
+\section*{Remerciements}
+\begin{itemize}[noitemsep]
+    \item \textbf{Aurélie VAN} (infirmière) — relecture médicale et corrections de la nomenclature
+\end{itemize}
 \end{document}

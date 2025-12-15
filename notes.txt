@@ -1,0 +1,3 @@
+numérotation par partie
+chaine de valorisation à la fin de la partie
+noms/nums des taches dans les titres
