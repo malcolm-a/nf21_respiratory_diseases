@@ -1,3 +1,16 @@
 numérotation par partie
 chaine de valorisation à la fin de la partie
 noms/nums des taches dans les titres
+
+
+OMNISCOPE 
+
+-> prendre dataset correlation_ready.parquet
+-> créer dataset train, dataset test
+-> bloc regression
+-> train dans past, test dans new
+-> créer 5 datasets scenarii (emissions reduites de 5, 10, 15, 20% sur 10 ans, voir modelization.ipynb)
+-> bloc regression -predict-> scenarii
+-> plot les predictions
+
+Visu? combined.parquet ou correlation_ready.parquet

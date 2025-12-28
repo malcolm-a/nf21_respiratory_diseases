@@ -23,19 +23,11 @@
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{listings}
-\lstset{
-    basicstyle=\ttfamily\footnotesize,
-    breaklines=true,
-    frame=single,
-    language=Python,
-    showstringspaces=false,
-    numbers=left,
-    numberstyle=\tiny\color{gray}
-}
-\usepackage{minted}
-\renewcommand{\listingscaption}{Code}
-\renewcommand{\listoflistingscaption}{Liste des codes sources}
+% Centralized listings configuration (styles + listing float)
+\input{listings_setup}
 \usepackage{tocloft}
+\usepackage{chngcntr}
+\usepackage{etoolbox}
 % =====================================================================
 % PAGE SETUP
 % =====================================================================
@@ -56,15 +48,31 @@
 % Header/Footer
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small NF21 -- Exploration de Données}
-\fancyhead[R]{\small UTT -- ISI1}
+\fancyhead[L]{\small\leftmark}
+\fancyhead[R]{\small NF21 -- UTT}
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
 
+% Custom part tracking for article class
+\newcommand{\currentpart}{}
+\makeatletter
+\let\oldpart\part
+\renewcommand{\part}[1]{%
+  \oldpart{#1}%
+  \renewcommand{\currentpart}{\thepart.\ #1}%
+  \markboth{\currentpart}{}%
+}
+\makeatother
+\renewcommand{\sectionmark}[1]{}
+
 % Section formatting
 \titleformat{\section}{\Large\bfseries\color{blue!70!black}}{\thesection}{1em}{}
 \titleformat{\subsection}{\large\bfseries\color{blue!50!black}}{\thesubsection}{1em}{}
+
+% Section counter reset per part
+\counterwithin{section}{part}
+\renewcommand{\thesection}{\arabic{section}}
 
 % =====================================================================
 % DOCUMENT
@@ -110,7 +118,7 @@
 % =====================================================================
 % 1. INTRODUCTION
 % =====================================================================
-\section{Introduction}
+\section*{Introduction}
 
 La pollution atmosphérique constitue aujourd'hui l'un des principaux déterminants environnementaux de santé. Ses effets sur les pathologies respiratoires sont largement documentés, mais leur ampleur et leur dynamique varient selon les territoires, les périodes et les types de polluants.
 
@@ -122,7 +130,7 @@ Ce rapport couvre les deux premières phases de la méthodologie CRISP-DM :
     \item \textbf{Data Understanding} : exploration et analyse des données disponibles
 \end{itemize}
 
-\subsection{Objectifs de l'étude}
+\subsection*{Objectifs de l'étude}
 
 \begin{itemize}[noitemsep]
     \item Comprendre et quantifier la relation entre la pollution atmosphérique et l'incidence des maladies respiratoires
@@ -212,7 +220,7 @@ Le projet se fixe plusieurs objectifs métier :
 
 Pour répondre à ces objectifs, deux principaux jeux de données externes ont été identifiés.
 
-\subsection{Données EDGAR}
+\subsection{Données EDGAR (TG11 -- Collecte)}
 
 \textbf{EDGAR (Emissions Database for Global Atmospheric Research)} : Base de données de la Commission Européenne contenant les émissions de polluants atmosphériques par pays, année et secteur d'activité.
 
@@ -325,11 +333,10 @@ Les hypothèses principales du projet reposent sur :
 % =====================================================================
 % 10. INDICATEURS ET CHAÎNES DE VALORISATION
 % =====================================================================
-\section{Indicateurs et Chaînes de Valorisation}
+\section{Indicateurs clefs}
 
-Dans le cadre de la méthodologie CRISP-DM, cette section présente les indicateurs clés et les chaînes de valorisation identifiées pour l'exploration des données sur la pollution atmosphérique et les maladies respiratoires.
+Dans le cadre de la méthodologie CRISP-DM, cette section présente les indicateurs clefs et les chaînes de valorisation identifiées pour l'exploration des données sur la pollution atmosphérique et les maladies respiratoires.
 
-\subsection{Indicateurs clés}
 
 \begin{table}[H]
 \centering
@@ -348,7 +355,347 @@ Tendance temporelle & Variation annuelle moyenne des émissions/mortalité & \% 
 \end{table}
 
 \clearpage
-\subsection{Chaînes de valorisation}
+
+\clearpage
+
+% =====================================================================
+% 3. DESCRIPTION DES DONNÉES
+% =====================================================================
+\section{Description des Données}
+
+\subsection{Vue d'ensemble (TG12 -- Préparation)}
+
+\begin{table}[H]
+\centering
+\caption{Caractéristiques des jeux de données}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Caractéristique} & \textbf{EDGAR} & \textbf{GBD 2023} \\
+\midrule
+Nombre de pays & 215 & 204 \\
+Période & 1970--2022 & 1980--2023 \\
+Variables & 9 polluants & 5 maladies \\
+Granularité & Pays, année, secteur & Pays, année, sexe \\
+Unité & Kilotonnes (kt) & Taux pour 100 000 hab. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Polluants étudiés (EDGAR)}
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{PM2.5} : Particules fines ($< 2.5 \mu m$)
+    \item \textbf{PM10} : Particules ($< 10 \mu m$)
+    \item \textbf{NOx} : Oxydes d'azote
+    \item \textbf{SO2} : Dioxyde de soufre
+    \item \textbf{CO} : Monoxyde de carbone
+    \item \textbf{NH3} : Ammoniac
+    \item \textbf{NMVOC} : Composés organiques volatils non méthaniques
+    \item \textbf{BC} : Carbone noir
+    \item \textbf{OC} : Carbone organique
+\end{enumerate}
+
+\subsection{Maladies respiratoires (GBD)}
+
+\begin{enumerate}[noitemsep]
+    \item Cancer de la trachée, des bronches et des poumons
+    \item Bronchopneumopathie chronique obstructive (BPCO) ou Maladie pulmonaire obstructive chronique dans le dataset
+    \item Asthme
+    \item Pneumoconioses
+    \item Maladies pulmonaires interstitielles
+\end{enumerate}
+
+\clearpage
+% =====================================================================
+% 3. QUALITÉ DES DONNÉES
+% =====================================================================
+\section{Qualité des Données}
+
+\subsection{Valeurs manquantes (TG12 -- Préparation)}
+
+L'analyse des valeurs manquantes révèle une excellente complétude des données. Le taux de valeurs manquantes global est inférieur à 0.01\%, principalement concentré dans les correspondances de noms de pays entre les deux sources.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{data_understanding_files/data_understanding_37_1.png}
+    \caption{Distribution des valeurs manquantes par variable}
+    \label{fig:missing}
+\end{figure}
+
+\subsection{Jointure des données}
+
+La jointure des deux sources de données (EDGAR et GBD) a été réalisée sur :
+\begin{itemize}[noitemsep]
+    \item Le code ISO à 3 lettres des pays (197 pays communs)
+    \item L'année (période commune : 1980--2022)
+\end{itemize}
+
+Le dataset final contient \textbf{38 millions d'observations} après jointure complète, et \textbf{63 445 observations} après agrégation par pays-année.
+
+\clearpage
+
+% =====================================================================
+% 4. ANALYSE EXPLORATOIRE
+% =====================================================================
+\section{Analyse Exploratoire}
+
+\subsection{Distribution des émissions par polluant (TG13 -- Traitement)}
+
+La figure \ref{fig:emissions_dist} montre la distribution des émissions pour chaque polluant. On observe une forte asymétrie positive (skewness) pour tous les polluants, avec quelques pays émettant des quantités significativement supérieures à la moyenne mondiale.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_41_1.png}
+    \caption{Distribution des émissions par polluant (échelle logarithmique)}
+    \label{fig:emissions_dist}
+\end{figure}
+
+\clearpage % graphiques et texte séparés sinon
+
+\subsection{Comparaison hommes/femmes}
+
+L'analyse par sexe révèle des différences significatives dans les taux de mortalité. Les hommes présentent des taux plus élevés pour la majorité des maladies respiratoires, notamment pour le cancer du poumon et les BPCO.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_43_0.png}
+    \caption{Comparaison des taux de mortalité par sexe}
+    \label{fig:gender}
+\end{figure}
+
+
+\clearpage
+
+% =====================================================================
+% 5. ÉVOLUTIONS TEMPORELLES
+% =====================================================================
+\section{Évolutions Temporelles}
+
+\subsection{Tendances des émissions 1980--2022 (TG23 -- Traitement)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_45_0.png}
+    \caption{Évolution temporelle des émissions mondiales par polluant}
+    \label{fig:emissions_time}
+\end{figure}
+
+\textbf{Observations clés :}
+\begin{itemize}[noitemsep]
+    \item Pics d'émissions en 1990 pour tous les polluants
+    \item Tous les polluants semblent très corrélés
+    \item L'Oxide de Carbone (CO) est le polluant le plus présent
+\end{itemize}
+
+\subsection{Tendances des décès 1980--2022 (TG23 -- Traitement)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_46_0.png}
+    \caption{Évolution temporelle des taux de mortalité par maladie}
+    \label{fig:deaths_time}
+\end{figure}
+
+\textbf{Observations clés :}
+\begin{itemize}[noitemsep]
+    \item Diminution globale des taux de mortalité pour les BPCO
+    \item Stabilité relative du cancer du poumon
+    \item Baisse significative de l'asthme mortel
+\end{itemize}
+
+\clearpage
+% =====================================================================
+% 6. ANALYSE GÉOGRAPHIQUE
+% =====================================================================
+\section{Analyse Géographique}
+
+\subsection{Pays les plus émetteurs (TG24 -- Restitution)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_48_0.png}
+    \caption{Top 15 des pays émetteurs (toutes émissions confondues)}
+    \label{fig:top_emitters}
+\end{figure}
+
+Les plus grands émetteurs sont la Chine, les États-Unis, l'Inde et la Russie, reflétant leur activité industrielle et leur population.
+
+\subsection{Pays avec les taux de mortalité les plus élevés}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_49_0.png}
+    \caption{Top 15 des pays par taux de mortalité respiratoire}
+    \label{fig:top_deaths}
+\end{figure}
+
+\subsection{Cartographie des maladies respiratoires (TG24 -- Restitution)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/diseases_countries.png}
+    \caption{Distribution géographique des taux de mortalité (cancer de la trachée et BPCO)}
+    \label{fig:map_diseases}
+\end{figure}
+
+\textbf{Observations :}
+\begin{itemize}[noitemsep]
+    \item Le cancer de la trachée présente des taux élevés en Europe de l'Est, Amérique du Nord et Océanie
+    \item La BPCO touche particulièrement l'Asie du Sud-Est (Chine, Inde) et certains pays africains
+    \item Les pays développés montrent des patterns différents selon la maladie
+\end{itemize}
+
+\subsection{Cartographie des émissions de polluants}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/pollutants_countries.png}
+    \caption{Distribution géographique des émissions (PM2.5, PM10, NH3, OC)}
+    \label{fig:map_pollutants}
+\end{figure}
+
+\textbf{Observations :}
+\begin{itemize}[noitemsep]
+    \item La Chine et les États-Unis dominent pour tous les polluants
+    \item Les particules fines (PM2.5, PM10) montrent des répartitions similaires
+    \item L'ammoniac (NH3) est particulièrement élevé dans les pays à forte activité agricole (Inde, Chine, Brésil, États-Unis, Russie)
+    \item Le carbone organique (OC) suit une distribution proche de celle des particules fines
+\end{itemize}
+
+\clearpage
+% =====================================================================
+% 7. ANALYSE SECTORIELLE
+% =====================================================================
+\section{Analyse Sectorielle}
+
+\subsection{Secteurs d'activité (TG33 -- Traitement)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_51_0.png}
+    \caption{Top 10 des secteurs d'activité par émissions totales}
+    \label{fig:sectors}
+\end{figure}
+
+Les secteurs dominants sont :
+\begin{itemize}[noitemsep]
+    \item Transport routier
+    \item Industrie manufacturière
+    \item Production d'énergie
+    \item Agriculture
+\end{itemize}
+
+\subsection{Relation secteur-polluant (TG34 -- Restitution)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_52_1.png}
+    \caption{Heatmap des émissions par secteur et polluant}
+    \label{fig:sector_pollutant}
+\end{figure}
+
+Cette heatmap révèle les associations secteur-polluant : le transport routier est associé aux NOx et CO, tandis que l'agriculture domine les émissions de NH3.
+
+
+\clearpage
+% =====================================================================
+% 8. ANALYSE DES CORRÉLATIONS
+% =====================================================================
+\section{Analyse des Corrélations}
+
+\subsection{Corrélations polluants-maladies (TG13 -- Traitement)}
+
+ La matrice de corrélation entre polluants et maladies respiratoires constitue le cœur de cette étude exploratoire.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_58_0.png}
+    \caption{Matrice de corrélation : polluants vs maladies respiratoires}
+    \label{fig:corr_pollutant_disease}
+\end{figure}
+
+\textbf{Corrélations notables :}
+\begin{itemize}[noitemsep]
+    \item PM2.5 et PM10 montrent des corrélations positives modérées avec toutes les maladies
+    \item NH3 et OC présentent les corrélations les plus fortes avec le cancer du poumon
+    \item les BPCO est corrélée à la plupart des polluants
+\end{itemize}
+
+\subsection{Matrice de corrélation complète (TG14 -- Restitution)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_59_0.png}
+    \caption{Matrice de corrélation complète (polluants et maladies)}
+    \label{fig:corr_full}
+\end{figure}
+
+\textbf{Observations :}
+\begin{itemize}[noitemsep]
+    \item Forte multicolinéarité entre polluants (r $>$ 0.8 pour la plupart)
+    \item Les maladies sont également corrélées entre elles
+    \item Ces corrélations suggèrent des facteurs communs (développement économique, urbanisation)
+    \item les BPCO semblent plus corrélées aux polluants que les autres maladies (notamment NMVOC, OC, PM10 et PM25)
+\end{itemize}
+
+\subsection{Relations détaillées -- scatter plots (TG14 -- Restitution)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_61_0.png}
+    \caption{Scatter plots : polluants clés vs maladies (échelle log)}
+    \label{fig:scatter}
+\end{figure}
+
+\clearpage
+% =====================================================================
+% 9. SYNTHÈSE AE
+% =====================================================================
+\section{Synthèse de l'Analyse Exploratoire}
+
+\subsection{Qualité des données}
+
+\begin{table}[H]
+\centering
+\caption{Résumé de la qualité des données}
+\begin{tabular}{lc}
+\toprule
+\textbf{Critère} & \textbf{Évaluation} \\
+\midrule
+Complétude & Excellente ($>$ 99.99\%) \\
+Couverture géographique & 197 pays \\
+Couverture temporelle & 43 ans (1980--2022) \\
+Cohérence des unités & Vérifiée \\
+Outliers & $<$ 2\% (à traiter) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Principales conclusions}
+
+\begin{enumerate}
+    \item \textbf{Corrélations significatives} : Des corrélations positives modérées existent entre les polluants atmosphériques et les maladies respiratoires, particulièrement pour les particules fines (PM2.5, PM10), les NVMOC, l'Oxide de Carbone et le cancer du poumon ainsi que les bronchopneumopathies chroniques obstructives (BPCO) .
+
+    \item \textbf{Multicolinéarité} : Les polluants sont fortement corrélés entre eux, ce qui nécessitera une attention particulière lors de la modélisation (régularisation, réduction de dimension).
+
+    \item \textbf{Disparités géographiques} : Les pays en développement présentent des taux d'émission croissants tandis que les pays développés montrent des tendances à la baisse.
+
+    \item \textbf{Différences par sexe} : Les hommes sont plus touchés par les maladies respiratoires, avec des taux de mortalité 2 à 3 fois supérieurs pour le cancer du poumon.
+
+    \item \textbf{Évolution temporelle} : Malgré l'augmentation des émissions globales, les taux de mortalité standardisés tendent à diminuer, suggérant l'impact positif des avancées médicales.
+\end{enumerate}
+
+\subsection{Recommandations pour la modélisation}
+
+\begin{itemize}[noitemsep]
+    \item Appliquer une transformation logarithmique aux émissions
+    \item Considérer une analyse en composantes principales (ACP) pour réduire la multicolinéarité
+    \item Inclure des variables de contrôle (PIB, urbanisation, accès aux soins)
+    \item Utiliser des modèles de panel pour exploiter la dimension temporelle
+    \item Tester des modèles avec décalage temporel (lag) entre exposition et maladie
+\end{itemize}
+
+\section{Chaînes de valorisation}
 
 Trois chaînes de valorisation principales ont été identifiées pour cette phase d'exploration.
 
@@ -603,345 +950,6 @@ TG34 -- Restitution et Visualisation & Heatmap secteur-polluant, bar charts des 
 \label{fig:chaine3}
 \end{figure}
 
-\clearpage
-
-% =====================================================================
-% 3. DESCRIPTION DES DONNÉES
-% =====================================================================
-\section{Description des Données}
-
-\subsection{Vue d'ensemble}
-
-\begin{table}[H]
-\centering
-\caption{Caractéristiques des jeux de données}
-\begin{tabular}{lcc}
-\toprule
-\textbf{Caractéristique} & \textbf{EDGAR} & \textbf{GBD 2023} \\
-\midrule
-Nombre de pays & 215 & 204 \\
-Période & 1970--2022 & 1980--2023 \\
-Variables & 9 polluants & 5 maladies \\
-Granularité & Pays, année, secteur & Pays, année, sexe \\
-Unité & Kilotonnes (kt) & Taux pour 100 000 hab. \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Polluants étudiés (EDGAR)}
-
-\begin{enumerate}[noitemsep]
-    \item \textbf{PM2.5} : Particules fines ($< 2.5 \mu m$)
-    \item \textbf{PM10} : Particules ($< 10 \mu m$)
-    \item \textbf{NOx} : Oxydes d'azote
-    \item \textbf{SO2} : Dioxyde de soufre
-    \item \textbf{CO} : Monoxyde de carbone
-    \item \textbf{NH3} : Ammoniac
-    \item \textbf{NMVOC} : Composés organiques volatils non méthaniques
-    \item \textbf{BC} : Carbone noir
-    \item \textbf{OC} : Carbone organique
-\end{enumerate}
-
-\subsection{Maladies respiratoires (GBD)}
-
-\begin{enumerate}[noitemsep]
-    \item Cancer de la trachée, des bronches et des poumons
-    \item Bronchopneumopathie chronique obstructive (BPCO) ou Maladie pulmonaire obstructive chronique dans le dataset
-    \item Asthme
-    \item Pneumoconioses
-    \item Maladies pulmonaires interstitielles
-\end{enumerate}
-
-\clearpage
-% =====================================================================
-% 3. QUALITÉ DES DONNÉES
-% =====================================================================
-\section{Qualité des Données}
-
-\subsection{Valeurs manquantes}
-
-L'analyse des valeurs manquantes révèle une excellente complétude des données. Le taux de valeurs manquantes global est inférieur à 0.01\%, principalement concentré dans les correspondances de noms de pays entre les deux sources.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{data_understanding_files/data_understanding_37_1.png}
-    \caption{Distribution des valeurs manquantes par variable}
-    \label{fig:missing}
-\end{figure}
-
-\subsection{Jointure des données}
-
-La jointure des deux sources de données (EDGAR et GBD) a été réalisée sur :
-\begin{itemize}[noitemsep]
-    \item Le code ISO à 3 lettres des pays (197 pays communs)
-    \item L'année (période commune : 1980--2022)
-\end{itemize}
-
-Le dataset final contient \textbf{38 millions d'observations} après jointure complète, et \textbf{63 445 observations} après agrégation par pays-année.
-
-\clearpage
-
-% =====================================================================
-% 4. ANALYSE EXPLORATOIRE
-% =====================================================================
-\section{Analyse Exploratoire}
-
-\subsection{Distribution des émissions par polluant}
-
-La figure \ref{fig:emissions_dist} montre la distribution des émissions pour chaque polluant. On observe une forte asymétrie positive (skewness) pour tous les polluants, avec quelques pays émettant des quantités significativement supérieures à la moyenne mondiale.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_41_1.png}
-    \caption{Distribution des émissions par polluant (échelle logarithmique)}
-    \label{fig:emissions_dist}
-\end{figure}
-
-\clearpage % graphiques et texte séparés sinon
-
-\subsection{Comparaison hommes/femmes}
-
-L'analyse par sexe révèle des différences significatives dans les taux de mortalité. Les hommes présentent des taux plus élevés pour la majorité des maladies respiratoires, notamment pour le cancer du poumon et les BPCO.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_43_0.png}
-    \caption{Comparaison des taux de mortalité par sexe}
-    \label{fig:gender}
-\end{figure}
-
-
-\clearpage
-
-% =====================================================================
-% 5. ÉVOLUTIONS TEMPORELLES
-% =====================================================================
-\section{Évolutions Temporelles}
-
-\subsection{Tendances des émissions (1980--2022)}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_45_0.png}
-    \caption{Évolution temporelle des émissions mondiales par polluant}
-    \label{fig:emissions_time}
-\end{figure}
-
-\textbf{Observations clés :}
-\begin{itemize}[noitemsep]
-    \item Pics d'émissions en 1990 pour tous les polluants
-    \item Tous les polluants semblent très corrélés
-    \item L'Oxide de Carbone (CO) est le polluant le plus présent
-\end{itemize}
-
-\subsection{Tendances des décès (1980--2022)}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_46_0.png}
-    \caption{Évolution temporelle des taux de mortalité par maladie}
-    \label{fig:deaths_time}
-\end{figure}
-
-\textbf{Observations clés :}
-\begin{itemize}[noitemsep]
-    \item Diminution globale des taux de mortalité pour les BPCO
-    \item Stabilité relative du cancer du poumon
-    \item Baisse significative de l'asthme mortel
-\end{itemize}
-
-\clearpage
-% =====================================================================
-% 6. ANALYSE GÉOGRAPHIQUE
-% =====================================================================
-\section{Analyse Géographique}
-
-\subsection{Pays les plus émetteurs}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_48_0.png}
-    \caption{Top 15 des pays émetteurs (toutes émissions confondues)}
-    \label{fig:top_emitters}
-\end{figure}
-
-Les plus grands émetteurs sont la Chine, les États-Unis, l'Inde et la Russie, reflétant leur activité industrielle et leur population.
-
-\subsection{Pays avec les taux de mortalité les plus élevés}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_49_0.png}
-    \caption{Top 15 des pays par taux de mortalité respiratoire}
-    \label{fig:top_deaths}
-\end{figure}
-
-\subsection{Cartographie des maladies respiratoires}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/diseases_countries.png}
-    \caption{Distribution géographique des taux de mortalité (cancer de la trachée et BPCO)}
-    \label{fig:map_diseases}
-\end{figure}
-
-\textbf{Observations :}
-\begin{itemize}[noitemsep]
-    \item Le cancer de la trachée présente des taux élevés en Europe de l'Est, Amérique du Nord et Océanie
-    \item La BPCO touche particulièrement l'Asie du Sud-Est (Chine, Inde) et certains pays africains
-    \item Les pays développés montrent des patterns différents selon la maladie
-\end{itemize}
-
-\subsection{Cartographie des émissions de polluants}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/pollutants_countries.png}
-    \caption{Distribution géographique des émissions (PM2.5, PM10, NH3, OC)}
-    \label{fig:map_pollutants}
-\end{figure}
-
-\textbf{Observations :}
-\begin{itemize}[noitemsep]
-    \item La Chine et les États-Unis dominent pour tous les polluants
-    \item Les particules fines (PM2.5, PM10) montrent des répartitions similaires
-    \item L'ammoniac (NH3) est particulièrement élevé dans les pays à forte activité agricole (Inde, Chine, Brésil, États-Unis, Russie)
-    \item Le carbone organique (OC) suit une distribution proche de celle des particules fines
-\end{itemize}
-
-\clearpage
-% =====================================================================
-% 7. ANALYSE SECTORIELLE
-% =====================================================================
-\section{Analyse Sectorielle}
-
-\subsection{Secteurs d'activité}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_51_0.png}
-    \caption{Top 10 des secteurs d'activité par émissions totales}
-    \label{fig:sectors}
-\end{figure}
-
-Les secteurs dominants sont :
-\begin{itemize}[noitemsep]
-    \item Transport routier
-    \item Industrie manufacturière
-    \item Production d'énergie
-    \item Agriculture
-\end{itemize}
-
-\subsection{Relation secteur-polluant}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_52_1.png}
-    \caption{Heatmap des émissions par secteur et polluant}
-    \label{fig:sector_pollutant}
-\end{figure}
-
-Cette heatmap révèle les associations secteur-polluant : le transport routier est associé aux NOx et CO, tandis que l'agriculture domine les émissions de NH3.
-
-
-\clearpage
-% =====================================================================
-% 8. ANALYSE DES CORRÉLATIONS
-% =====================================================================
-\section{Analyse des Corrélations}
-
-\subsection{Corrélations polluants-maladies}
-
-La matrice de corrélation entre polluants et maladies respiratoires constitue le cœur de cette étude exploratoire.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_58_0.png}
-    \caption{Matrice de corrélation : polluants vs maladies respiratoires}
-    \label{fig:corr_pollutant_disease}
-\end{figure}
-
-\textbf{Corrélations notables :}
-\begin{itemize}[noitemsep]
-    \item PM2.5 et PM10 montrent des corrélations positives modérées avec toutes les maladies
-    \item NH3 et OC présentent les corrélations les plus fortes avec le cancer du poumon
-    \item les BPCO est corrélée à la plupart des polluants
-\end{itemize}
-
-\subsection{Matrice de corrélation complète}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_59_0.png}
-    \caption{Matrice de corrélation complète (polluants et maladies)}
-    \label{fig:corr_full}
-\end{figure}
-
-\textbf{Observations :}
-\begin{itemize}[noitemsep]
-    \item Forte multicolinéarité entre polluants (r $>$ 0.8 pour la plupart)
-    \item Les maladies sont également corrélées entre elles
-    \item Ces corrélations suggèrent des facteurs communs (développement économique, urbanisation)
-    \item les BPCO semblent plus corrélées aux polluants que les autres maladies (notamment NMVOC, OC, PM10 et PM25)
-\end{itemize}
-
-\subsection{Relations détaillées (scatter plots)}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.95\textwidth]{data_understanding_files/data_understanding_61_0.png}
-    \caption{Scatter plots : polluants clés vs maladies (échelle log)}
-    \label{fig:scatter}
-\end{figure}
-
-\clearpage
-% =====================================================================
-% 9. SYNTHÈSE AE
-% =====================================================================
-\section{Synthèse de l'Analyse Exploratoire}
-
-\subsection{Qualité des données}
-
-\begin{table}[H]
-\centering
-\caption{Résumé de la qualité des données}
-\begin{tabular}{lc}
-\toprule
-\textbf{Critère} & \textbf{Évaluation} \\
-\midrule
-Complétude & Excellente ($>$ 99.99\%) \\
-Couverture géographique & 197 pays \\
-Couverture temporelle & 43 ans (1980--2022) \\
-Cohérence des unités & Vérifiée \\
-Outliers & $<$ 2\% (à traiter) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Principales conclusions}
-
-\begin{enumerate}
-    \item \textbf{Corrélations significatives} : Des corrélations positives modérées existent entre les polluants atmosphériques et les maladies respiratoires, particulièrement pour les particules fines (PM2.5, PM10), les NVMOC, l'Oxide de Carbone et le cancer du poumon ainsi que les bronchopneumopathies chroniques obstructives (BPCO) .
-
-    \item \textbf{Multicolinéarité} : Les polluants sont fortement corrélés entre eux, ce qui nécessitera une attention particulière lors de la modélisation (régularisation, réduction de dimension).
-
-    \item \textbf{Disparités géographiques} : Les pays en développement présentent des taux d'émission croissants tandis que les pays développés montrent des tendances à la baisse.
-
-    \item \textbf{Différences par sexe} : Les hommes sont plus touchés par les maladies respiratoires, avec des taux de mortalité 2 à 3 fois supérieurs pour le cancer du poumon.
-
-    \item \textbf{Évolution temporelle} : Malgré l'augmentation des émissions globales, les taux de mortalité standardisés tendent à diminuer, suggérant l'impact positif des avancées médicales.
-\end{enumerate}
-
-\subsection{Recommandations pour la modélisation}
-
-\begin{itemize}[noitemsep]
-    \item Appliquer une transformation logarithmique aux émissions
-    \item Considérer une analyse en composantes principales (ACP) pour réduire la multicolinéarité
-    \item Inclure des variables de contrôle (PIB, urbanisation, accès aux soins)
-    \item Utiliser des modèles de panel pour exploiter la dimension temporelle
-    \item Tester des modèles avec décalage temporel (lag) entre exposition et maladie
-\end{itemize}
-
 
 \clearpage
 % =====================================================================
@@ -965,7 +973,7 @@ Les données étant statiques et n'ayant pas pour but d'être récoltées pério
 \clearpage
 \section{Prétraitement des données}
 
-\subsection{Fusion des données}
+\subsection{Fusion des données (TG41-43 -- Transformation)}
 
 La partie la plus considérable de l'étape de préparation des données s'est portée sur la création d'un dataset unique et cohérent à partir des données extraites. Ce travail a été effectué avant l'exploration des données : en effet, il est nécessaire de fusionner les données des différents datasets pour pouvoir les exploiter ensemble. Nous avons utilisé la bibliothèque \emph{Polars} de Python pour effectuer cette fusion. En effet, malgré notre plus grande maîtrise de la bibliothèque \emph{Pandas}, nous avons choisi d'utiliser \emph{Polars} en raison de son efficacité et de sa capacité à gérer plus rapidement et efficacement des données relativement volumineuses. Cet outil, écrit en Rust, offre des performances bien supérieures et une syntaxe similaire à celle de \emph{Pandas} (bien que parfois plus complexe), ce qui facilite la transition entre les deux bibliothèques. Dans les cas où nos connaissances de Pandas pouvaient permettre des opérations plus rapides (e.g.: avec matplotlib ou seaborn), une simple conversion avec \lstinline{df.to_pandas()} suffit.
 
@@ -975,7 +983,7 @@ Ainsi, polars a été utilisé pour effectuer les opérations suivantes :
 \begin{listing}[H]
 \caption{Extraction des données EDGAR avec Polars}
 \label{lst:edgar_extraction}
-\begin{minted}[frame=single, linenos, breaklines]{python}
+\begin{lstlisting}[style=pythonstyle]
 import polars as pl
 
 edgar_dirs = [d for d in Path('data/EDGAR').iterdir() if d.is_dir()]
@@ -993,7 +1001,7 @@ edgar = pl.concat(
     [df.with_columns(pl.lit(name).alias("Pollutant")) for name, df in poll_dfs.items()],
     how="vertical"
 )
-\end{minted}
+\end{lstlisting}
 \end{listing}
 
 L'extraction des données GBD se fait de manière similaire. Un challenge a été les noms de pays : afin de fusionner les données EDGAR et GBD, nous devions joindre sur les années et les pays. Or, si EDGAR nous fournit des noms de pays en anglais et des codes ISO 3166-1 alpha-3, soit une catégorisation propre, GBD lui nous fournit des noms de pays en français mal traduit. En effet, même en naviguant le site en anglais avec un navigateur en anglais, le dataset GBD renvoie des noms de pays en français avec une traduction automatique. Ce qui donne des apostrophes mal encodés, des articles de manière aléatoire (e.g.: France, Espagne, mais "\textit{La Chine}"). Cela nous a forcé à créer une table de traduction des noms de pays en français vers ceux en anglais, à la main, dans un dictionnaire \lstinline{country_mapping} exporté dans un fichier CSV.
@@ -1005,7 +1013,7 @@ Une fois cela fait, il ne restait plus qu'à dépivoter les années du dataset E
 \begin{listing}[H]
 \caption{Aggrégation du dataset combiné pour la corrélation}
 \label{lst:combined_to_corr}
-\begin{minted}[frame=single, linenos, breaklines]{python}
+\begin{lstlisting}[style=pythonstyle]
 emissions_agg = (
     combined2
     .group_by(['gbd_location', 'Country_code_A3', 'year', 'Pollutant'])
@@ -1022,7 +1030,7 @@ correlation_data = emissions_agg.join(
 )
 
 correlation_data.write_parquet('data/combined/correlation_ready.parquet')
-\end{minted}
+\end{lstlisting}
 \end{listing}
 
 \begin{listing}[H]
@@ -1039,7 +1047,7 @@ shape: (5, 17)
 
 C'est à partir de ce dataset que nous avons obtenu notre matrice de corrélation et c'est à partir de celui-ci que nous avons commencé à développer notre modèle.
 
-\subsection{Stockage des données}
+\subsection{Stockage des données (TG44 -- Export)}
 
 Le dataset brut étant assez lourd, pour optimiser le stockage, nous avons utilisé le format \emph{Parquet} afin de pouvoir facilement stocker, charger et manipuler les données. Cela permettait en outre de rendre plus facile le partage de ces fichiers, évitant des fichiers CSV de plusieurs gigaoctets contre seulement quelques mégaoctets.
 
@@ -1047,7 +1055,134 @@ Le format \emph{Parquet}, un format binaire ouvert, est particulièrement adapt�
 
 
 
-\subsection{Chaîne de valeur du prétraitement des données}
+
+
+\clearpage
+\section{Préparation pour la modélisation}
+
+Une fois le dataset fusionné et stocké au format Parquet, les données doivent être préparées pour la modélisation prédictive. Cette étape comprend le chargement des données, l'application de transformations, la gestion des valeurs manquantes, la normalisation des features et la séparation train/test.
+
+\subsection{Décalage temporel (Lag)}
+
+Un point clef de la préparation pour la modélisation est l'introduction d'un décalage temporel entre les émissions (variables explicatives) et les décès (variable cible). En effet, il existe un délai biologique entre l'exposition à la pollution atmosphérique et le développement de maladies respiratoires. Dans notre cas, les données sont préparées de telle sorte que les émissions de l'année $t$ prédisent les décès de l'année $t + lag$, où \lstinline{lag} est le nombre d'années considérées.
+
+Dans les faits, le décalage temporel a été testé et n'a pas permis d'améliorer les performances du modèle. Nous avons donc décidé de garder la fonctionnalité, mais de ne pas l'utiliser en choisissant un lag égal à zéro. Les résultats des tests de lag sont présentés ci-dessous :
+
+\begin{listing}[H]
+\caption{Analyse des décalages temporels par maladie}
+\label{lst:lag_analysis}
+\begin{lstlisting}[style=textstyle]
+LAG ANALYSIS BY DISEASE
+============================================================
+
+Random State: 1
+
+Lung Cancer:
+  Lag 0 years | R² = 0.8567
+  Lag 3 years | R² = 0.8625
+  Lag 6 years | R² = 0.8720
+  Lag 9 years | R² = 0.8660
+
+Pneumoconiosis:
+  Lag 0 years | R² = 0.8058
+  Lag 3 years | R² = 0.7868
+  Lag 6 years | R² = 0.7367
+  Lag 9 years | R² = 0.7928
+
+COPD:
+  Lag 0 years | R² = 0.7937
+  Lag 3 years | R² = 0.7811
+  Lag 6 years | R² = 0.7924
+  Lag 9 years | R² = 0.8119
+
+...
+\end{lstlisting}
+\end{listing}
+
+Comme montré dans la sortie de script ci-dessus, les performances varient légèrement selon le décalage temporel choisi, mais aucun pattern consistant n'émerge. Un décalage de 0 années fournit un bon équilibre et reste notre choix par défaut.
+
+\clearpage
+\subsection{Gestion des valeurs manquantes (TG51 -- Préparation ML)}
+
+Le dataset combiné contient quelques valeurs manquantes dûes aux enregistrements manquants pour les émissions de polluants dans certains pays certaines années.
+
+Nous avons opté pour la stratégie la plus simple et la plus robuste : \textbf{supprimer les lignes contenant des valeurs manquantes}. Cette approche, bien qu'elle réduise la taille du dataset, garantit la qualité des données utilisées pour le modèle et évite les artefacts introduits par l'imputation.L'imputation remplace les valeurs manquantes par une estimation statistique fixe calculée sur l'ensemble de la colonne, comme la moyenne, la médiane ou la valeur la plus fréquente. L'interpolation est une autre méthode possible, elle consiste à deviner la valeur manquante en observant la tendance des valeurs voisines (juste avant et juste après), souvent de manière linéaire. Elle est particulièrement adaptée aux séries temporelles, mais peut introduire des artefacts si les données sont bruitées ou si la tendance n'est pas linéaire.
+
+\subsection{Transformations des features (TG51 -- Préparation ML)}
+
+\subsubsection{Transformation logarithmique}
+
+Les émissions de polluants présentent souvent une distribution asymétrique avec des valeurs aberrantes. Pour normaliser cette distribution et réduire l'influence des valeurs extrêmes, nous appliquons une transformation logarithmique :
+
+\[
+x'_i = \log(1 + x_i)
+\]
+
+où $x_i$ est l'émission du polluant $i$. La constante additive 1 (log1p) permet de gérer les valeurs zéro ou très proches de zéro sans générer d'erreurs numériques.
+
+\subsubsection{Normalisation des features}
+
+Après la transformation logarithmique, nous normalisons et rédusions toutes les features à l'aide d'un \lstinline{StandardScaler} du framework de machine-learning \emph{scikit-learn}. Cette normalisation ramène les features à une moyenne de 0 et un écart-type de 1 :
+
+\[
+x'_i = \frac{x_i - \mu}{\sigma}
+\]
+
+où $\mu$ et $\sigma$ sont la moyenne et l'écart-type estimés sur l'ensemble d'entraînement. Cette étape est essentielle pour les modèles sensibles à l'échelle (régression linéaire, réseaux de neurones, etc.).
+
+\clearpage
+\subsection{Sélection des features et cibles}
+
+Pour la modélisation, nous utilisons les neuf polluants comme features explicatives :
+\begin{itemize}[noitemsep]
+    \item CO (Monoxyde de carbone)
+    \item SO\textsubscript{2} (Dioxyde de soufre)
+    \item NO\textsubscript{x} (Oxydes d'azote)
+    \item NMVOC (Composés organiques volatils non méthaniques)
+    \item PM\textsubscript{2.5} (Particules fines)
+    \item PM\textsubscript{10} (Particules grossières)
+    \item NH\textsubscript{3} (Ammoniac)
+    \item BC (Carbone noir)
+    \item OC (Carbone organique)
+\end{itemize}
+
+Pour les cibles (variables à prédire), nous avons sélectionné trois maladies respiratoires principales basées sur l'analyse exploratoire :
+\begin{itemize}[noitemsep]
+    \item \textbf{Lung Cancer} : Cancer de la trachée, des bronches et des poumons
+    \item \textbf{Pneumoconiosis} : Pneumoconiose
+    \item \textbf{COPD} : Bronchopneumopathie chronique obstructive
+\end{itemize}
+
+Les deux autres maladies (Asthme et Autres maladies respiratoires chroniques) ont été exclues car l'analyse exploratoire n'a révélé aucune corrélation significative avec les polluants étudiés.
+
+\subsection{Séparation train/test}
+
+Le dataset est divisé en deux ensembles :
+\begin{itemize}[noitemsep]
+    \item \textbf{Ensemble d'entraînement} (80\%) : utilisé pour ajuster les paramètres du modèle et calibrer le \lstinline{StandardScaler}
+    \item \textbf{Ensemble de test} (20\%) : utilisé pour évaluer les performances du modèle sur des données non vues pendant l'entraînement
+\end{itemize}
+
+Cette séparation en 80/20 est assez standard et permet une évaluation fiable des performances du modèle dans la grande majorité des cas.
+
+\subsection{Implémentations}
+
+Deux versions de la pipeline de préparation ont été implémentées dans le module \lstinline{model.data_prep} :
+
+\begin{itemize}[noitemsep]
+    \item \textbf{\lstinline{prepare_data()}} : pour scikit-learn, retournant un objet \lstinline{PreparedData} avec les arrays NumPy
+    \item \textbf{\lstinline{prepare_data_torch()}} : pour PyTorch, retournant un objet \lstinline{PreparedDataTorch} avec les tensors PyTorch
+\end{itemize}
+
+Les deux versions partagent la même logique de préparation et de normalisation, garantissant la cohérence entre les deux frameworks.
+
+\subsection{Analyse des scenarii}
+
+Le module inclut également des fonctions qui nous seront utiles dans la partie modélisation pour l'analyse de scenarii post-modélisation (\lstinline{get_baseline_emissions()}, \lstinline{create_scenario_features()}), permettant d'évaluer l'impact de réductions d'émissions sur la mortalité prédite. Cela facilite l'interprétabilité du modèle et le support à la décision.
+
+\clearpage
+
+\section{Chaîne de valorisation}
 
 Une chaîne de valorisation a été identifiée pour la phase de préparation des données, regroupant l'extraction, le nettoyage, la fusion et le stockage.
 
@@ -1129,130 +1264,6 @@ TG44 -- Stockage et Export & Exporter les datasets en format Parquet (compressio
 \caption{Schéma de la chaîne 4 -- Préparation et intégration des données}
 \label{fig:chaine4}
 \end{figure}
-
-\clearpage
-\section{Préparation pour la modélisation}
-
-Une fois le dataset fusionné et stocké au format Parquet, les données doivent être préparées pour la modélisation prédictive. Cette étape comprend le chargement des données, l'application de transformations, la gestion des valeurs manquantes, la normalisation des features et la séparation train/test.
-
-\subsection{Décalage temporel (Lag)}
-
-Un point clef de la préparation pour la modélisation est l'introduction d'un décalage temporel entre les émissions (variables explicatives) et les décès (variable cible). En effet, il existe un délai biologique entre l'exposition à la pollution atmosphérique et le développement de maladies respiratoires. Dans notre cas, les données sont préparées de telle sorte que les émissions de l'année $t$ prédisent les décès de l'année $t + lag$, où \lstinline{lag} est le nombre d'années considérées.
-
-Dans les faits, le décalage temporel a été testé et n'a pas permis d'améliorer les performances du modèle. Nous avons donc décidé de garder la fonctionnalité, mais de ne pas l'utiliser en choisissant un lag égal à zéro. Les résultats des tests de lag sont présentés ci-dessous :
-
-\begin{listing}[H]
-\caption{Analyse des décalages temporels par maladie}
-\label{lst:lag_analysis}
-\begin{minted}[frame=single, linenos, breaklines, fontsize=\small]{text}
-LAG ANALYSIS BY DISEASE
-============================================================
-
-Random State: 1
-
-Lung Cancer:
-  Lag 0 years | R² = 0.8567
-  Lag 3 years | R² = 0.8625
-  Lag 6 years | R² = 0.8720
-  Lag 9 years | R² = 0.8660
-
-Pneumoconiosis:
-  Lag 0 years | R² = 0.8058
-  Lag 3 years | R² = 0.7868
-  Lag 6 years | R² = 0.7367
-  Lag 9 years | R² = 0.7928
-
-COPD:
-  Lag 0 years | R² = 0.7937
-  Lag 3 years | R² = 0.7811
-  Lag 6 years | R² = 0.7924
-  Lag 9 years | R² = 0.8119
-
-...
-\end{minted}
-\end{listing}
-
-Comme montré dans la sortie de script ci-dessus, les performances varient légèrement selon le décalage temporel choisi, mais aucun pattern consistant n'émerge. Un décalage de 0 années fournit un bon équilibre et reste notre choix par défaut.
-
-\clearpage
-\subsection{Gestion des valeurs manquantes}
-
-Le dataset combiné contient quelques valeurs manquantes dûes aux enregistrements manquants pour les émissions de polluants dans certains pays certaines années.
-
-Nous avons opté pour la stratégie la plus simple et la plus robuste : \textbf{supprimer les lignes contenant des valeurs manquantes}. Cette approche, bien qu'elle réduise la taille du dataset, garantit la qualité des données utilisées pour le modèle et évite les artefacts introduits par l'imputation.L'imputation remplace les valeurs manquantes par une estimation statistique fixe calculée sur l'ensemble de la colonne, comme la moyenne, la médiane ou la valeur la plus fréquente. L'interpolation est une autre méthode possible, elle consiste à deviner la valeur manquante en observant la tendance des valeurs voisines (juste avant et juste après), souvent de manière linéaire. Elle est particulièrement adaptée aux séries temporelles, mais peut introduire des artefacts si les données sont bruitées ou si la tendance n'est pas linéaire.
-
-\subsection{Transformations des features}
-
-\subsubsection{Transformation logarithmique}
-
-Les émissions de polluants présentent souvent une distribution asymétrique avec des valeurs aberrantes. Pour normaliser cette distribution et réduire l'influence des valeurs extrêmes, nous appliquons une transformation logarithmique :
-
-\[
-x'_i = \log(1 + x_i)
-\]
-
-où $x_i$ est l'émission du polluant $i$. La constante additive 1 (log1p) permet de gérer les valeurs zéro ou très proches de zéro sans générer d'erreurs numériques.
-
-\subsubsection{Normalisation des features}
-
-Après la transformation logarithmique, nous normalisons et rédusions toutes les features à l'aide d'un \lstinline{StandardScaler} du framework de machine-learning \emph{scikit-learn}. Cette normalisation ramène les features à une moyenne de 0 et un écart-type de 1 :
-
-\[
-x'_i = \frac{x_i - \mu}{\sigma}
-\]
-
-où $\mu$ et $\sigma$ sont la moyenne et l'écart-type estimés sur l'ensemble d'entraînement. Cette étape est essentielle pour les modèles sensibles à l'échelle (régression linéaire, réseaux de neurones, etc.).
-
-\clearpage
-\subsection{Sélection des features et cibles}
-
-Pour la modélisation, nous utilisons les neuf polluants comme features explicatives :
-\begin{itemize}[noitemsep]
-    \item CO (Monoxyde de carbone)
-    \item SO\textsubscript{2} (Dioxyde de soufre)
-    \item NO\textsubscript{x} (Oxydes d'azote)
-    \item NMVOC (Composés organiques volatils non méthaniques)
-    \item PM\textsubscript{2.5} (Particules fines)
-    \item PM\textsubscript{10} (Particules grossières)
-    \item NH\textsubscript{3} (Ammoniac)
-    \item BC (Carbone noir)
-    \item OC (Carbone organique)
-\end{itemize}
-
-Pour les cibles (variables à prédire), nous avons sélectionné trois maladies respiratoires principales basées sur l'analyse exploratoire :
-\begin{itemize}[noitemsep]
-    \item \textbf{Lung Cancer} : Cancer de la trachée, des bronches et des poumons
-    \item \textbf{Pneumoconiosis} : Pneumoconiose
-    \item \textbf{COPD} : Bronchopneumopathie chronique obstructive
-\end{itemize}
-
-Les deux autres maladies (Asthme et Autres maladies respiratoires chroniques) ont été exclues car l'analyse exploratoire n'a révélé aucune corrélation significative avec les polluants étudiés.
-
-\subsection{Séparation train/test}
-
-Le dataset est divisé en deux ensembles :
-\begin{itemize}[noitemsep]
-    \item \textbf{Ensemble d'entraînement} (80\%) : utilisé pour ajuster les paramètres du modèle et calibrer le \lstinline{StandardScaler}
-    \item \textbf{Ensemble de test} (20\%) : utilisé pour évaluer les performances du modèle sur des données non vues pendant l'entraînement
-\end{itemize}
-
-Cette séparation en 80/20 est assez standard et permet une évaluation fiable des performances du modèle dans la grande majorité des cas.
-
-\subsection{Implémentations}
-
-Deux versions de la pipeline de préparation ont été implémentées dans le module \lstinline{model.data_prep} :
-
-\begin{itemize}[noitemsep]
-    \item \textbf{\lstinline{prepare_data()}} : pour scikit-learn, retournant un objet \lstinline{PreparedData} avec les arrays NumPy
-    \item \textbf{\lstinline{prepare_data_torch()}} : pour PyTorch, retournant un objet \lstinline{PreparedDataTorch} avec les tensors PyTorch
-\end{itemize}
-
-Les deux versions partagent la même logique de préparation et de normalisation, garantissant la cohérence entre les deux frameworks.
-
-\subsection{Analyse des scenarii}
-
-Le module inclut également des fonctions qui nous seront utiles dans la partie modélisation pour l'analyse de scenarii post-modélisation (\lstinline{get_baseline_emissions()}, \lstinline{create_scenario_features()}), permettant d'évaluer l'impact de réductions d'émissions sur la mortalité prédite. Cela facilite l'interprétabilité du modèle et le support à la décision.
-
 \clearpage
 \section{Synthèse de la préparation des données}
 
@@ -1261,14 +1272,14 @@ La préparation des données est une étape cruciale dans le processus qui doit 
 \begin{listing}[H]
 \caption{Sortie du script de préparation des données et présentation du dataset final}
 \label{lst:final-dataset}
-\begin{minted}[frame=single, linenos, breaklines, fontsize=\small]{text}
+\begin{lstlisting}[style=textstyle]
 
 Saved aggregated dataset: 8,471 rows × 17 columns
 File: data/combined/correlation_ready.parquet
 
 Columns: ['gbd_location', 'Country_code_A3', 'year', 'pm10', 'oc', 'nmvoc', 'nox', 'pm25', 'nh3', 'co', 'so2', 'bc', 'Asthme', 'Cancer de la trachée, des bronches et des poumons', 'Pneumoconiose', 'Autres maladies respiratoires chroniques', 'Maladie pulmonaire obstructive chronique']
 
-\end{minted}
+\end{lstlisting}
 \end{listing}
 
 % ==================================================
@@ -1289,6 +1300,7 @@ L'apprentissage profond (\textit{deep learning}) est un sous-ensemble du machine
 
 Dans notre contexte de prédiction de mortalité due à la pollution, nous explorons à la fois des modèles classiques de machine learning (pour l'interprétabilité et la performance) et des approches de deep learning (pour la flexibilité et la capacité à modéliser des relations complexes potentiellement cachées dans les données). Nous avons de prime abord choisi cette approche à des fins éducatives : à la fois dans le but de pratiquer ces différentes techniques et d'identifier leurs différences une fois mis en application, mais également pour démontrer leurs forces et leurs faiblesses.
 
+\clearpage
 \subsection{Technologies choisies}
 
 Afin de mettre en œuvre un algorithme de machine learning, nous nous sommes dirigés vers la bilbiothèque \emph{scikit-learn}. \textit{sklearn}, de son nom abrégé, est une bibliothèque Python open-source qui implémente de nombreux algorithmes de machine learning. C'est le standard dans l'industrie et du côté de la recherche pour le machine learning dit "classique", de la préparation des données à la modélisation. Scikit-learn et les algorithmes de machine learning qu'il implémente sont particulièrement adaptés aux problèmes de régression sur des données tabulaires comme le notre. \emph{PyTorch}, quant à elle, est une bibliothèque Python open-source développée par Meta pour le deep learning.
@@ -1324,7 +1336,7 @@ $\bar{y}$: la moyenne des valeurs réelles
 \clearpage
 \section{Implémentation itérative des modèles}
 
-\subsection{Modèle de machine learning scikit-learn}
+\subsection{Modèle de machine learning scikit-learn (TG52 -- Modélisation classique)}
 
 Dans un premier temps, le temps de calcul et l'écriture du code étant très rapide avec scikit-learn une fois nos données prétraitées et nos features/targets définies, nous avons décidé de comparer plusieurs algorithmes de machine learning pour trouver le meilleur modèle. Nous avons utilisé les algorithmes suivants :
 
@@ -1348,6 +1360,7 @@ Les forêts aléatoires sont un ensemble (\textit{ensemble learning}) d'arbres d
 
 Une forêt aléatoire construit des centaines d'arbres de décision, chacun entraîné sur un sous-ensemble aléatoire des données (avec remise) et utilisant des subsets aléatoires des features. Chaque arbre fait une prédiction, et la prédiction finale est la \textbf{moyenne} (pour la régression) ou le \textbf{vote majoritaire} (pour la classification) de tous les arbres. Cette approche d'ensemble réduit drastiquement l'overfitting car les erreurs d'apprentissage des arbres individuels se compensent mutuellement. De plus, les forêts aléatoires peuvent capturer des relations non-linéaires et des interactions entre features sans nécessiter d'ingénierie manuelle des features.
 
+\clearpage
 \subsubsection{Gradient Boosting}
 
 Le Gradient Boosting (ou Boost de Gradients) fonctionne également en construisant un ensemble d'arbres, mais de manière séquentielle et intelligente. Contrairement aux forêts aléatoires où tous les arbres sont indépendants, le Gradient Boosting entraîne les arbres un par un. Chaque nouvel arbre est entraîné pour \textbf{corriger les erreurs} du modèle précédent en se concentrant sur les cas mal prédits.
@@ -1361,7 +1374,7 @@ Il n'est pas nécessaire à notre niveau de comprendre en détails comment fonct
 \begin{listing}[H]
 \caption{Comparaison des modèles scikit-learn}
 \label{lst:sklearn-comparison}
-\begin{minted}[frame=single, linenos, breaklines]{python}
+\begin{lstlisting}[style=pythonstyle]
 results = {}
 for name, model in models.items():
     # Train
@@ -1374,24 +1387,24 @@ for name, model in models.items():
 
     results[name] = {'model': model, 'r2': r2, 'rmse': rmse}
     print(f"{name:20s} | R² = {r2:.4f} | RMSE = {rmse:.1f}")
-\end{minted}
+\end{lstlisting}
 \end{listing}
 
 Cette boucle nous donne la sortie suivante :
 \begin{listing}[H]
 \caption{Comparaison des modèles scikit-learn (sortie de script)}
 \label{lst:sklearn-comparison-output}
-\begin{minted}[frame=single, breaklines]{text}
+\begin{lstlisting}[style=textstyle]
 Ridge                | R² = 0.1564 | RMSE = 9188.9
 Random Forest        | R² = 0.7373 | RMSE = 5128.3
 Gradient Boosting    | R² = 0.7715 | RMSE = 4782.2
-\end{minted}
+\end{lstlisting}
 \end{listing}
 
 Le modèle qui se démarque ici est celui du boost de gradient, qui présente un R² de 0.7715 et un RMSE de 4782.2. C'est donc le modèle que nous avons choisi pour notre analyse. On notera que le code scikit-learn est extrêmement simple et va droit au but. \lstinline{model.fit()} pour entraîner le modèle et \lstinline{model.predict()} pour obtenir les prédictions. Une fois que l'on a bien récupéré nos données, c'est tout ce qu'il faut pour obtenir des prédictions.
 
 \clearpage
-\subsection{Modèle de deep learning PyTorch}
+\subsection{Modèle de deep learning PyTorch (TG53 -- Modélisation deep learning)}
 
 \subsubsection{Réseaux de neurones artificiels (ANN)}
 
@@ -1439,7 +1452,7 @@ Ce cycle est répété sur plusieurs \textit{epochs} (passes complètes sur les 
 \begin{listing}[H]
 \caption{Notre ANN}
 \label{lst:our-ann}
-\begin{minted}[frame=single, linenos, breaklines]{python}
+\begin{lstlisting}[style=pythonstyle]
 class MLP(nn.Module):
     def __init__(self, n_features):
         super().__init__()
@@ -1453,7 +1466,7 @@ class MLP(nn.Module):
 
     def forward(self, x):
         return self.layers(x)
-\end{minted}
+\end{lstlisting}
 \end{listing}
 
 C'est le modèle le plus basique que nous puissions définir. Il est composé de deux couches cachées avec une fonction d'activation ReLU entre chaque couche. C'est tout. En effet, nous ne traitons pas de données catégorielles et notre dataset n'est pas très complexe ou volumineux : nous travaillons sur un problème de régression linéaire simple avec des données numériques tabulaires.
@@ -1465,7 +1478,7 @@ Avec PyTorch, contrairement à scikt-learn, nous devons définir nous-mêmes la 
 \begin{listing}[H]
 \label{lst:training_loop}
 \caption{Boucle d'entraînement de notre modèle}
-\begin{minted}[frame=single, linenos, breaklines]{python}
+\begin{lstlisting}[style=pythonstyle]
 def train_model(data, epochs=500, lr=0.001):  # Lower lr, more epochs
     model = MLP(data.n_features)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -1484,7 +1497,7 @@ def train_model(data, epochs=500, lr=0.001):  # Lower lr, more epochs
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # Prevent exploding gradients
             optimizer.step()
     return model
-\end{minted}
+\end{lstlisting}
 \end{listing}
 
 Nous avons choisi un optimiseur Adam et l'erreur moyenne quadratique moyenne (MSE) comme fonction de perte. Il ne nous reste plus qu'à appliquer notre boucle d'entraînement sur nos données et de regarder le score $R^2$ obtenu.
@@ -1501,7 +1514,7 @@ L'implémentation PyTorch est celle présentée dans la section précédente. Po
 \begin{listing}[H]
 \caption{Notre ANN (rappel)}
 \label{lst:pytorch_model}
-\begin{minted}[frame=single, linenos, breaklines]{python}
+\begin{lstlisting}[style=pythonstyle]
 class MLP(nn.Module):
     def __init__(self, n_features):
         super().__init__()
@@ -1515,7 +1528,7 @@ class MLP(nn.Module):
 
     def forward(self, x):
         return self.layers(x)
-\end{minted}
+\end{lstlisting}
 \end{listing}
 
 \subsubsection{Implémentation scikit-learn : GradientBoostingRegressor}
@@ -1523,7 +1536,7 @@ class MLP(nn.Module):
 \begin{listing}[H]
 \caption{Modèle scikit-learn final}
 \label{lst:sklearn_model}
-\begin{minted}[frame=single, linenos, breaklines]{python}
+\begin{lstlisting}[style=pythonstyle]
 for disease in DISEASES:
     from data_prep import FEATURES
     data = prepare_data(target_disease=disease, lag_years=0, feature_names=FEATURES)
@@ -1539,7 +1552,7 @@ for disease in DISEASES:
     short_name = DISEASE_SHORT_NAMES[disease]
     print(f"{short_name:25s} | R² = {r2:.4f}")
 
-\end{minted}
+\end{lstlisting}
 \end{listing}
 
 \subsubsection{Problèmes rencontrés}
@@ -1548,14 +1561,14 @@ Nous avons dû adapter notre modèle pour contrer l'overfitting présent dans no
 
 Toutefois, nous nous sommes heurtés à un problème assez classique en machine learning. Notre modèle est assez précis et il est très bon pour l'interpolation des données, c'est-à-dire pour prédire des valeurs dans une plage de valeurs connues. En revanche, les modèles basés sur des arbres de décisions sont très mauvais en ce qui concerne la prédiction des valeurs hors de la plage de valeurs connues, c'est-à-dire l'extrapolation. Nous avons donc un modèle relativement simple et performant, mais limité pour l'étape suivante qui consistait à créer des scenarii.
 
-\subsection{Résultats}
+\subsection{Résultats (TG54 -- Évaluation)}
 
 En effet, notre modèle de régression gradient boosting (GB) a obtenu un $R^2$ assez satisfaisant pour les données de test. Ce résultat est satisfaisant car il indique que notre modèle est capable de prédire correctement les valeurs dans une plage de valeurs connues.
 
 \begin{listing}[H]
 \label{lst:gb_results}
 \caption{Résultats du modèle de régression gradient boosting}
-\begin{minted}[breaklines]{text}
+\begin{lstlisting}[style=textstyle]
 GRADIENT BOOSTING - ALL DISEASES
 ==================================================
 Lung Cancer               | R² = 0.9232
@@ -1568,7 +1581,7 @@ TOP 5 POLLUTANTS PER DISEASE
 Lung Cancer               | so2 (25%), nh3 (17%), nox (13%), oc (10%), co (9%)
 Pneumoconiosis            | oc (16%), nh3 (15%), nmvoc (13%), pm10 (12%), nox (12%)
 COPD                      | nh3 (18%), oc (18%), nmvoc (15%), so2 (10%), nox (10%)
-\end{minted}
+\end{lstlisting}
 \end{listing}
 
 Nous pouvons également observer quelles features ont été les plus importantes pour notre modèle de régression GB. Cette information est capitale, c'est elle qui nous permet de comprendre quelles variables ont le plus d'influence sur la prédiction de la maladie respiratoire. Le modèle a identifié des liens entre des polluants spécifiques et les maladies respiratoires, sans nécessiter de connaissances préalables sur les mécanismes physiologiques sous-jacents.
@@ -1579,18 +1592,18 @@ En ce qui concerne notre modèle ANN, nous avons des résultats un peu moins pro
 \begin{listing}[H]
 \label{lst:ann_results}
 \caption{Résultats du modèle ANN}
-\begin{minted}[breaklines]{text}
+\begin{lstlisting}[style=textstyle]
 PYTORCH MLP - ALL DISEASES
 ==================================================
 Lung Cancer               | R² = 0.8718
 Pneumoconiosis            | R² = 0.9558
 COPD                      | R² = 0.6374
-\end{minted}
+\end{lstlisting}
 \end{listing}
 
 En particulier, le modèle se retrouve en difficulté à prédire les bronchopneumopathies chroniques obstructives (COPD). Cela peut être attribué à la complexité des mécanismes physiologiques impliqués dans ces maladies et à la nécessité d'un modèle plus sophistiqué pour prendre en compte ces interactions.
 
-\subsection{Prédictions}
+\subsection{Prédictions (TG61-64 -- Simulation de scenarii)}
 
 Une fois les modèles entraînés et évalués, nous les avons utilisés pour effectuer des prédictions sur des scenarii hypothétiques de réduction des émissions de polluants. L'objectif est de simuler l'impact de politiques environnementales sur la mortalité due aux maladies respiratoires.
 
@@ -1641,6 +1654,249 @@ Ces résultats illustrent plusieurs points importants :
     \item D'autres facteurs non modélisés (politiques de santé, évolution démographique, progrès médicaux) influencent également la mortalité.
 \end{itemize}
 
+\section{Implémentation dans Omniscope}
+
+Dans le cadre de NF21, nous avons appris à utiliser \href{https://visokio.com/omniscope/}{Omniscope}, outil de \textit{Business Intelligence (BI)} permettant notamment de créer des tableaux de bord interactifs. C'est l'usage principal,que nous en avons fait au cours de nos séances de travaux pratiques, mais dans le cadre de ce projet, nous pouvons utiliser Omniscope pour implémenter des modèles statistiques. En effet, dans la partie permettant la préparation des données, il est possible d'ajouter des blocs de la catégorie \emph{Analyse} afin d'appliquer des modèles de machine learning sur les données préparées.
+
+\subsection{Portage de la pipeline de préparation}
+
+La première étape consiste à répliquer notre pipeline de préparation des données dans Omniscope. Nous avons tout d'abord voulu utiliser le fichier Parquet généré par notre script Python, étant donné qu'Omniscope supporte nativement ce format de fichier. Cependant, il semble que notre fichier contienne des métadonnées qui ne sont pas supportées par Omniscope. Qu'à cela ne tienne, nous avons repris nos fichiers $edgar.csv$ et $gbd.csv$ et avons recréé la pipeline de préparation des données en utilisant les blocs natifs d'Omniscope. Nous avons pu gagner du temps en réutilisant ces fichiers déjà traités et en nous basant sur les processus déjà créés. Le résultat est le même que celui obtenu avec notre script Python, à savoir un dataset agrégé par pays et par année, avec les polluants et les maladies respiratoires.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/omni_data_prep.png}
+    \caption{Pipeline de préparation des données dans Omniscope}
+    \label{fig:omniscope_data_prep}
+\end{figure}
+
+Nous avons chargé le dataset GBD ainsi qu'un fichier contenant les traductions de pays afin d'éviter les problèmes rencontrés plus tôt. Nous avons chargé le dataset EDGAR, dépivoté et renommé les années puis nous nous avons corrigé les types de données des deux datasets, agrégé les données par pays et par année puis avons fusionné les deux datasets sur les colonnes pays et année. Enfin, nous n'avons gardé que les décès comme métrique et les BPCO comme maladie cible.
+
+\clearpage
+\subsection{Modèles de régression dans Omniscope}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/omni_model_pipeline.png}
+    \caption{Modèle de régression dans Omniscope}
+    \label{fig:omniscope_model}
+\end{figure}
+
+À partir de ces données, nous avons pu utiliser les blocs de modèles prédéfinis dans la partie \textit{Analytics}. Nous avons choisi d'utiliser le modèle appelé \emph{Regression}, car c'était plus ou moins le seul qui correspondait à notre besoin. Ce bloc se base sur du code \emph{R} que nous ne pouvons malheureusement pas inspecter et modifier nous-mêmes. Il propose deux types de régressions : "Regression" et "Adaptive Spline Regression (MARS)". Le premier type propose trois modèles : \textit{Linear Regression}, \textit{Logistic Regression} et \textit{Count Regression}. Nous pouvons cocher les trois et le code se chargera de choisir le meilleur modèle lui-même. Nous avons seulement à choisir notre variable cible et nos variables d'entrée. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/omni_model_details.png}
+    \caption{Configuration du modèle de régression dans Omniscope}
+    \label{fig:omniscope_model_config}
+\end{figure}
+\clearpage
+
+
+Nous avons testé les deux solutions. La solution MARS n'a pas fonctionné : la boucle d'entraînement du modèle ne s'est jamais arrêtée, ce qui suggère un problème d'overfitting que le modèle de Regression classique n'a – a priori – pas. Comme nous n'avons aucun contrôle sur les hyperparamètres, nous nous contenterons du modèle de régression qui fonctionne. Nous lui avons fourni un split 80/20 de nos données pour l'entraînement et le test. Nous obtenons après entraînement un $R^2$ de 0.79 avec le modèle \textit{Linear Regression}, ainsi que les données brutes de prédiction et des données permettant de visualiser l'impact des variables d'entrée sur la variable cible. Avec les données brutes, nous créons un bloc de concaténation avec les données du split test afin de comparer les prédictions avec les valeurs réelles. Cela nous permert de créer le dashboard suivant :
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/omni_dashboard.png}
+    \caption{Dashboard Omniscope des prédictions}
+    \label{fig:omniscope_dashboard}
+\end{figure}   
+
+On observe en effet que les prédictions sont relativement proches des valeurs réelles. Néanmoins, on reste dans le cadre de nos valeurs de test, et non dans un cadre d'extrapolation comme pour nos scenarii de réduction des émissions. Un problème que nous avons rencontré est qu'avec Omniscope, il n'est pas possible d'exporter le modèle entraîné pour l'utiliser en dehors de l'outil. Nous ne pouvons donc pas utiliser ce modèle pour faire des prédictions sur nos scenarii de réduction des émissions, ce qui limite grandement l'intérêt de cette implémentation. À la place, nous allons devoir ré-entraîner le même modèle en mettant nos extrapolations comme données de test, ce qui n'est pas optimal car le modèle n'aura pas vu de telles données lors de l'entraînement.
+
+\clearpage
+\subsection{Prédictions des scenarii dans Omniscope}
+
+Nous avons donc ré-entraîné notre modèle de régression dans Omniscope en utilisant nos données de scenarii comme données de test. Afin d'obtenir des données de scenarii, nous avons créé un bloc \emph{Custom Python script} (on aurait tout aussi bien pu utiliser \emph{R}) afin de créer un dataset avec des émissions réduites de 15\% sur 10 ans par rapport à l'année de référence.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/omni_python.png}
+    \caption{Création des données de scenarii dans Omniscope}
+    \label{fig:omniscope_scenario_data}
+\end{figure}
+
+Les blocs Python d'Omniscope sont relativement simples à utiliser, les données en entrée et en sortie sont des DataFrames Pandas, ce qui rend leur manipulation aisée. Nous avons ensuite relié ce bloc au bloc de modèle de régression afin d'obtenir les prédictions sur ces nouvelles données.
+
+\clearpage
+Le résultat est le suivant :
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{img/omni_scenario_results.png}
+    \caption{Résultats des prédictions des scenarii dans Omniscope}
+    \label{fig:omniscope_scenario_results}
+\end{figure}
+
+Le modèle n'a pu prédire qu'une simple baisse linéaire de la mortalité en fonction de la réduction des émissions, ce qui est cohérent avec le modèle de régression linéaire utilisé. Cependant, cette droite semble indiquer plutôt une tendance générale qu'une prédiction précise, car rien ne nous dit que la mortalité due aux BPCO diminue de manière parfaitement linéaire avec la réduction des émissions dans la réalité. Néanmoins, cela illustre bien comment Omniscope peut être utilisé pour implémenter des modèles statistiques et effectuer des analyses de scenarii, même si les capacités sont limitées par rapport à une implémentation complète en Python ou R. La conclusion générale et les interprétations que l'on peut en faire sont les mêmes que pour les modèles précédents : il faut rester prudent dans l'interprétation des résultats et considérer les limites des modèles utilisés.
+
+\subsection{Pertinence d'Omniscope pour la modélisation}
+
+Omniscope offre une interface conviviale pour la préparation des données et l'implémentation de modèles statistiques, ce qui peut être avantageux pour les utilisateurs non spécialisés en programmation. Cependant, ses capacités de modélisation sont limitées comparées à des bibliothèques dédiées comme scikit-learn ou PyTorch. L'impossibilité d'exporter les modèles entraînés restreint leur utilisation dans des analyses plus complexes ou des scenarii spécifiques. De plus, le choix limité de modèles et l'absence de contrôle fin sur les hyperparamètres peuvent entraver la performance et la flexibilité nécessaires pour des analyses avancées. Ainsi, Omniscope est pertinent pour des analyses exploratoires, des tableaux de bord interactifs, ou encore pour de la modélisation légère. En revanche, pour créer des modèles plus poussés, il nous apparaît comme plus judicieux d'utiliser des outils plus spécialisés, quitte à intégrer ce qui peut l'être dans Omniscope par la suite.
+
+
+\section{Chaînes de valorisation}
+
+Deux chaînes de valorisation ont été identifiées pour la phase de modélisation, couvrant l'entraînement des modèles prédictifs et l'analyse de scenarii prospectifs.
+
+\subsubsection{Chaîne 5 -- Entraînement et évaluation des modèles prédictifs}
+
+\textbf{Objectif :} Construire, entraîner et évaluer des modèles de machine learning pour prédire la mortalité respiratoire à partir des données d'émissions de polluants.
+
+\begin{table}[H]
+\centering
+\caption{Chaîne 5 -- Entraînement et évaluation des modèles}
+\begin{tabular}{p{3.5cm}p{5.5cm}p{4.5cm}}
+\toprule
+\textbf{Tâche générique (TG)} & \textbf{Tâches spécifiques (TS)} & \textbf{Outils} \\
+\midrule
+TG51 -- Préparation ML & Charger le dataset Parquet, appliquer la transformation log, normaliser avec StandardScaler, séparer train/test (80/20) & Polars, scikit-learn, Omniscope \\
+\midrule
+TG52 -- Modélisation classique & Entraîner GradientBoostingRegressor, optimiser les hyperparamètres avec GridSearchCV, extraire l'importance des features & scikit-learn, Omniscope \\
+\midrule
+TG53 -- Modélisation deep learning & Définir l'architecture MLP (64→32→1), entraîner avec Adam et MSE loss, ajuster learning rate et epochs & PyTorch \\
+\midrule
+TG54 -- Évaluation et sélection & Calculer R² et RMSE sur test set, comparer les performances GB vs ANN, sauvegarder les modèles (.joblib, .pt), créer dashboard & scikit-learn, PyTorch, joblib, Omniscope \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1, transform shape]
+\node[tache_gen] (preparation) at (0,0) {Préparation ML};
+\node[tache_gen] (classique) at (4,0) {Modèle classique};
+\node[tache_gen] (deep) at (8,0) {Modèle DL};
+\node[tache_gen] (evaluation) at (12,0) {Évaluation};
+
+\draw[fleche] (preparation) -- (classique);
+\draw[fleche] (classique) -- (deep);
+\draw[fleche] (deep) -- (evaluation);
+
+\node[tache_spec] (load) at (-1,-1.5) {Charger Parquet};
+\node[tache_spec] (scale) at (1,-1.5) {Normaliser};
+\node[tache_spec] (gb) at (3,-1.5) {Gradient Boost};
+\node[tache_spec] (grid) at (5,-1.5) {GridSearchCV};
+\node[tache_spec] (mlp) at (7,-1.5) {Définir MLP};
+\node[tache_spec] (train) at (9,-1.5) {Entraîner};
+\node[tache_spec] (r2) at (11,-1.5) {Calculer R²};
+\node[tache_spec] (save) at (13,-1.5) {Dashboard};
+
+\draw[fleche_spec] (preparation.south) -- (load.north);
+\draw[fleche_spec] (preparation.south) -- (scale.north);
+\draw[fleche_spec] (classique.south) -- (gb.north);
+\draw[fleche_spec] (classique.south) -- (grid.north);
+\draw[fleche_spec] (deep.south) -- (mlp.north);
+\draw[fleche_spec] (deep.south) -- (train.north);
+\draw[fleche_spec] (evaluation.south) -- (r2.north);
+\draw[fleche_spec] (evaluation.south) -- (save.north);
+
+\node[outil] (outil_prep) at (0,-3) {\scriptsize Polars, Omniscope};
+\node[outil] (outil_class) at (4,-3) {\scriptsize sklearn, Omniscope};
+\node[outil] (outil_deep) at (8,-3) {\scriptsize PyTorch};
+\node[outil] (outil_eval) at (12,-3) {\scriptsize joblib, Omniscope};
+
+\draw[fleche_spec, dashed] (load.south) -- (outil_prep.north);
+\draw[fleche_spec, dashed] (scale.south) -- (outil_prep.north);
+\draw[fleche_spec, dashed] (gb.south) -- (outil_class.north);
+\draw[fleche_spec, dashed] (grid.south) -- (outil_class.north);
+\draw[fleche_spec, dashed] (mlp.south) -- (outil_deep.north);
+\draw[fleche_spec, dashed] (train.south) -- (outil_deep.north);
+\draw[fleche_spec, dashed] (r2.south) -- (outil_eval.north);
+\draw[fleche_spec, dashed] (save.south) -- (outil_eval.north);
+
+% Légende
+\node[tache_gen, text width=0.6cm, minimum height=0.3cm] at (3,-4.2) {\tiny TG};
+\node[anchor=west, font=\tiny] at (3.5,-4.2) {Tâche gén.};
+\node[tache_spec, text width=0.6cm, minimum height=0.3cm] at (6,-4.2) {\tiny TS};
+\node[anchor=west, font=\tiny] at (6.5,-4.2) {Tâche spéc.};
+\node[outil, text width=0.6cm, minimum height=0.3cm] at (9,-4.2) {\tiny O};
+\node[anchor=west, font=\tiny] at (9.5,-4.2) {Outils};
+\end{tikzpicture}
+
+\caption{Schéma de la chaîne 5 -- Entraînement et évaluation des modèles}
+\label{fig:chaine5}
+\end{figure}
+
+\clearpage
+\subsubsection{Chaîne 6 -- Simulation de scenarii de réduction des émissions}
+
+\textbf{Objectif :} Exploiter les modèles entraînés pour simuler l'impact de politiques de réduction des émissions sur la mortalité respiratoire et produire des recommandations de santé publique.
+
+\begin{table}[H]
+\centering
+\caption{Chaîne 6 -- Simulation de scenarii}
+\begin{tabular}{p{3.5cm}p{5.5cm}p{4.5cm}}
+\toprule
+\textbf{Tâche générique (TG)} & \textbf{Tâches spécifiques (TS)} & \textbf{Outils} \\
+\midrule
+TG61 -- Définition des scenarii & Établir les niveaux de référence (2022), définir les taux de réduction (5\%, 10\%, 20\%), générer les vecteurs d'émissions simulées & Python (numpy), Omniscope \\
+\midrule
+TG62 -- Prédiction prospective & Charger les modèles sauvegardés, appliquer les scalers aux données simulées, effectuer les prédictions pour chaque scénario & scikit-learn, PyTorch, joblib, Omniscope \\
+\midrule
+TG63 -- Analyse comparative & Calculer les variations de mortalité prédites, comparer les résultats GB vs ANN, identifier les incohérences d'extrapolation & Python (pandas, numpy) \\
+\midrule
+TG64 -- Restitution décisionnelle & Générer les graphiques de prédiction par scénario, synthétiser les recommandations, documenter les limites du modèle & Matplotlib, Omniscope, LaTeX \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1, transform shape]
+\node[tache_gen] (definition) at (0,0) {Définition};
+\node[tache_gen] (prediction) at (4,0) {Prédiction};
+\node[tache_gen] (analyse) at (8,0) {Analyse};
+\node[tache_gen] (restitution) at (12,0) {Restitution};
+
+\draw[fleche] (definition) -- (prediction);
+\draw[fleche] (prediction) -- (analyse);
+\draw[fleche] (analyse) -- (restitution);
+
+\node[tache_spec] (baseline) at (-1,-1.5) {Niveau réf. 2022};
+\node[tache_spec] (taux) at (1,-1.5) {Taux réduction};
+\node[tache_spec] (load_model) at (3,-1.5) {Charger modèles};
+\node[tache_spec] (predict) at (5,-1.5) {Prédire mortalité};
+\node[tache_spec] (variation) at (7,-1.5) {Calc. variations};
+\node[tache_spec] (compare) at (9,-1.5) {Comparer GB/ANN};
+\node[tache_spec] (graph) at (11,-1.5) {Graphiques};
+\node[tache_spec] (reco) at (13,-1.5) {Recommand.};
+
+\draw[fleche_spec] (definition.south) -- (baseline.north);
+\draw[fleche_spec] (definition.south) -- (taux.north);
+\draw[fleche_spec] (prediction.south) -- (load_model.north);
+\draw[fleche_spec] (prediction.south) -- (predict.north);
+\draw[fleche_spec] (analyse.south) -- (variation.north);
+\draw[fleche_spec] (analyse.south) -- (compare.north);
+\draw[fleche_spec] (restitution.south) -- (graph.north);
+\draw[fleche_spec] (restitution.south) -- (reco.north);
+
+\node[outil] (outil_def) at (0,-3) {\scriptsize numpy, Omniscope};
+\node[outil] (outil_pred) at (4,-3) {\scriptsize sklearn, Omniscope};
+\node[outil] (outil_ana) at (8,-3) {\scriptsize pandas, numpy};
+\node[outil] (outil_rest) at (12,-3) {\scriptsize Matplotlib, Omniscope};
+
+\draw[fleche_spec, dashed] (baseline.south) -- (outil_def.north);
+\draw[fleche_spec, dashed] (taux.south) -- (outil_def.north);
+\draw[fleche_spec, dashed] (load_model.south) -- (outil_pred.north);
+\draw[fleche_spec, dashed] (predict.south) -- (outil_pred.north);
+\draw[fleche_spec, dashed] (variation.south) -- (outil_ana.north);
+\draw[fleche_spec, dashed] (compare.south) -- (outil_ana.north);
+\draw[fleche_spec, dashed] (graph.south) -- (outil_rest.north);
+\draw[fleche_spec, dashed] (reco.south) -- (outil_rest.north);
+
+% Légende
+\node[tache_gen, text width=0.6cm, minimum height=0.3cm] at (3,-4.2) {\tiny TG};
+\node[anchor=west, font=\tiny] at (3.5,-4.2) {Tâche gén.};
+\node[tache_spec, text width=0.6cm, minimum height=0.3cm] at (6,-4.2) {\tiny TS};
+\node[anchor=west, font=\tiny] at (6.5,-4.2) {Tâche spéc.};
+\node[outil, text width=0.6cm, minimum height=0.3cm] at (9,-4.2) {\tiny O};
+\node[anchor=west, font=\tiny] at (9.5,-4.2) {Outils};
+\end{tikzpicture}
+
+\caption{Schéma de la chaîne 6 -- Simulation de scenarii}
+\label{fig:chaine6}
+\end{figure}
+\clearpage
 
 \clearpage
 \section{Conclusion générale}
@@ -1651,8 +1907,15 @@ Ces résultats illustrent plusieurs points importants :
 % ANNEXES
 % ===================================================
 \clearpage
+\appendix
+\pagenumbering{roman}
+\setcounter{page}{1}
+
 \phantomsection
-\part{Annexes}
+\addcontentsline{toc}{part}{Annexes}
+\begin{center}
+{\Huge\bfseries Annexes}
+\end{center}
 
 \phantomsection
 \addcontentsline{toc}{section}{Références}
@@ -1671,9 +1934,23 @@ Ces résultats illustrent plusieurs points importants :
 \end{itemize}
 
 \phantomsection
+\addcontentsline{toc}{section}{Ressources}
+\section*{Ressources}
+
+\begin{itemize}[noitemsep]
+    \item GitHub repository : \url{github.com/malcolm-a/nf21_respiratory_diseases}
+    
+\end{itemize}
+
+
+\phantomsection
 \addcontentsline{toc}{section}{Remerciements}
 \section*{Remerciements}
 \begin{itemize}[noitemsep]
+    \item \textbf{Dr. Babiga BIRREGAH} (enseignant-chercheur UTT) — encadrement et conseils méthodologiques
+    \item \textbf{Magali COLIN} (intervenante UTT) — tutoriels Omniscope et support technique
     \item \textbf{Aurélie VAN} (infirmière) — relecture médicale et corrections de la nomenclature
 \end{itemize}
+
+
 \end{document}

@@ -1,0 +1,113 @@
+\babel@toc {french}{}\relax 
+\contentsline {section}{\numberline {1}Introduction}{5}{section.0.1}%
+\contentsline {subsection}{\numberline {1.1}Objectifs de l'étude}{5}{subsection.0.1.1}%
+\contentsline {part}{I\hspace {1em}Business Understanding}{6}{part.1}%
+\contentsline {section}{\numberline {1}Contexte Général}{6}{section.1.1}%
+\contentsline {section}{\numberline {2}Question Métier et Objectifs}{6}{section.1.2}%
+\contentsline {section}{\numberline {3}Enjeux du Projet}{7}{section.1.3}%
+\contentsline {subsection}{\numberline {3.1}Enjeux environnementaux}{7}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {3.2}Enjeux sanitaires}{7}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {3.3}Enjeux économiques}{7}{subsection.1.3.3}%
+\contentsline {subsection}{\numberline {3.4}Enjeux sociaux}{7}{subsection.1.3.4}%
+\contentsline {section}{\numberline {4}Objectifs Métier}{7}{section.1.4}%
+\contentsline {section}{\numberline {5}Jeux de Données}{8}{section.1.5}%
+\contentsline {subsection}{\numberline {5.1}Données EDGAR}{8}{subsection.1.5.1}%
+\contentsline {subsection}{\numberline {5.2}Données IHME : Global Burden of Disease}{8}{subsection.1.5.2}%
+\contentsline {section}{\numberline {6}Périmètre Analytique}{8}{section.1.6}%
+\contentsline {section}{\numberline {7}Parties Prenantes}{9}{section.1.7}%
+\contentsline {subsection}{\numberline {7.1}Commanditaire principal}{9}{subsection.1.7.1}%
+\contentsline {subsection}{\numberline {7.2}Équipe projet}{9}{subsection.1.7.2}%
+\contentsline {subsection}{\numberline {7.3}Acteurs secondaires}{9}{subsection.1.7.3}%
+\contentsline {section}{\numberline {8}Risques et Hypothèses}{9}{section.1.8}%
+\contentsline {subsection}{\numberline {8.1}Risques identifiés}{9}{subsection.1.8.1}%
+\contentsline {subsection}{\numberline {8.2}Hypothèses}{9}{subsection.1.8.2}%
+\contentsline {part}{II\hspace {1em}Data Understanding}{10}{part.2}%
+\contentsline {section}{\numberline {1}Indicateurs et Chaînes de Valorisation}{10}{section.2.1}%
+\contentsline {subsection}{\numberline {1.1}Indicateurs clés}{10}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {1.2}Chaînes de valorisation}{11}{subsection.2.1.2}%
+\contentsline {subsubsection}{\numberline {1.2.1}Chaîne 1 -- Analyse des corrélations polluants-maladies}{11}{subsubsection.2.1.2.1}%
+\contentsline {subsubsection}{\numberline {1.2.2}Chaîne 2 -- Analyse géographique et temporelle}{12}{subsubsection.2.1.2.2}%
+\contentsline {subsubsection}{\numberline {1.2.3}Chaîne 3 -- Analyse sectorielle des émissions}{13}{subsubsection.2.1.2.3}%
+\contentsline {section}{\numberline {2}Description des Données}{14}{section.2.2}%
+\contentsline {subsection}{\numberline {2.1}Vue d'ensemble}{14}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2}Polluants étudiés (EDGAR)}{14}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.3}Maladies respiratoires (GBD)}{14}{subsection.2.2.3}%
+\contentsline {section}{\numberline {3}Qualité des Données}{15}{section.2.3}%
+\contentsline {subsection}{\numberline {3.1}Valeurs manquantes}{15}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {3.2}Jointure des données}{15}{subsection.2.3.2}%
+\contentsline {section}{\numberline {4}Analyse Exploratoire}{16}{section.2.4}%
+\contentsline {subsection}{\numberline {4.1}Distribution des émissions par polluant}{16}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {4.2}Comparaison hommes/femmes}{17}{subsection.2.4.2}%
+\contentsline {section}{\numberline {5}Évolutions Temporelles}{18}{section.2.5}%
+\contentsline {subsection}{\numberline {5.1}Tendances des émissions (1980--2022)}{18}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {5.2}Tendances des décès (1980--2022)}{18}{subsection.2.5.2}%
+\contentsline {section}{\numberline {6}Analyse Géographique}{19}{section.2.6}%
+\contentsline {subsection}{\numberline {6.1}Pays les plus émetteurs}{19}{subsection.2.6.1}%
+\contentsline {subsection}{\numberline {6.2}Pays avec les taux de mortalité les plus élevés}{19}{subsection.2.6.2}%
+\contentsline {subsection}{\numberline {6.3}Cartographie des maladies respiratoires}{20}{subsection.2.6.3}%
+\contentsline {subsection}{\numberline {6.4}Cartographie des émissions de polluants}{21}{subsection.2.6.4}%
+\contentsline {section}{\numberline {7}Analyse Sectorielle}{22}{section.2.7}%
+\contentsline {subsection}{\numberline {7.1}Secteurs d'activité}{22}{subsection.2.7.1}%
+\contentsline {subsection}{\numberline {7.2}Relation secteur-polluant}{23}{subsection.2.7.2}%
+\contentsline {section}{\numberline {8}Analyse des Corrélations}{24}{section.2.8}%
+\contentsline {subsection}{\numberline {8.1}Corrélations polluants-maladies}{24}{subsection.2.8.1}%
+\contentsline {subsection}{\numberline {8.2}Matrice de corrélation complète}{25}{subsection.2.8.2}%
+\contentsline {subsection}{\numberline {8.3}Relations détaillées (scatter plots)}{26}{subsection.2.8.3}%
+\contentsline {section}{\numberline {9}Synthèse de l'Analyse Exploratoire}{27}{section.2.9}%
+\contentsline {subsection}{\numberline {9.1}Qualité des données}{27}{subsection.2.9.1}%
+\contentsline {subsection}{\numberline {9.2}Principales conclusions}{27}{subsection.2.9.2}%
+\contentsline {subsection}{\numberline {9.3}Recommandations pour la modélisation}{27}{subsection.2.9.3}%
+\contentsline {part}{III\hspace {1em}Data Preparation}{28}{part.3}%
+\contentsline {section}{\numberline {1}Jeux de données (rappel)}{28}{section.3.1}%
+\contentsline {section}{\numberline {2}Extraction des données}{28}{section.3.2}%
+\contentsline {section}{\numberline {3}Prétraitement des données}{29}{section.3.3}%
+\contentsline {subsection}{\numberline {3.1}Fusion des données}{29}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.2}Stockage des données}{30}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3}Chaîne de valeur du prétraitement des données}{31}{subsection.3.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}Chaîne 4 -- Préparation et intégration des données}{31}{subsubsection.3.3.3.1}%
+\contentsline {section}{\numberline {4}Préparation pour la modélisation}{32}{section.3.4}%
+\contentsline {subsection}{\numberline {4.1}Décalage temporel (Lag)}{32}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {4.2}Gestion des valeurs manquantes}{33}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {4.3}Transformations des features}{33}{subsection.3.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}Transformation logarithmique}{33}{subsubsection.3.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}Normalisation des features}{33}{subsubsection.3.4.3.2}%
+\contentsline {subsection}{\numberline {4.4}Sélection des features et cibles}{34}{subsection.3.4.4}%
+\contentsline {subsection}{\numberline {4.5}Séparation train/test}{34}{subsection.3.4.5}%
+\contentsline {subsection}{\numberline {4.6}Implémentations}{34}{subsection.3.4.6}%
+\contentsline {subsection}{\numberline {4.7}Analyse des scenarii}{34}{subsection.3.4.7}%
+\contentsline {section}{\numberline {5}Synthèse de la préparation des données}{35}{section.3.5}%
+\contentsline {part}{IV\hspace {1em}Modelization}{36}{part.4}%
+\contentsline {section}{\numberline {1}Réflexions préliminaires}{36}{section.4.1}%
+\contentsline {subsection}{\numberline {1.1}Modèles, machine-learning et deep-learning}{36}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {1.2}Technologies choisies}{37}{subsection.4.1.2}%
+\contentsline {subsection}{\numberline {1.3}Choix des variables}{37}{subsection.4.1.3}%
+\contentsline {subsection}{\numberline {1.4}Méthodes d'évaluation d'un modèle}{37}{subsection.4.1.4}%
+\contentsline {section}{\numberline {2}Implémentation itérative des modèles}{38}{section.4.2}%
+\contentsline {subsection}{\numberline {2.1}Modèle de machine learning scikit-learn}{38}{subsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {2.1.1}Ridge}{38}{subsubsection.4.2.1.1}%
+\contentsline {subsubsection}{\numberline {2.1.2}Forêts aléatoires (Random Forests)}{38}{subsubsection.4.2.1.2}%
+\contentsline {subsubsection}{\numberline {2.1.3}Gradient Boosting}{39}{subsubsection.4.2.1.3}%
+\contentsline {subsubsection}{\numberline {2.1.4}Modèle retenu}{39}{subsubsection.4.2.1.4}%
+\contentsline {subsection}{\numberline {2.2}Modèle de deep learning PyTorch}{40}{subsection.4.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}Réseaux de neurones artificiels (ANN)}{40}{subsubsection.4.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}Notre modèle d'ANN}{41}{subsubsection.4.2.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.3}Boucle d'entraînement}{42}{subsubsection.4.2.2.3}%
+\contentsline {section}{\numberline {3}Implémentation finale et résultats}{43}{section.4.3}%
+\contentsline {subsection}{\numberline {3.1}Implémentation}{43}{subsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Implémentation PyTorch : ANN}{43}{subsubsection.4.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.1.2}Implémentation scikit-learn : GradientBoostingRegressor}{43}{subsubsection.4.3.1.2}%
+\contentsline {subsubsection}{\numberline {3.1.3}Problèmes rencontrés}{43}{subsubsection.4.3.1.3}%
+\contentsline {subsection}{\numberline {3.2}Résultats}{44}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {3.3}Prédictions}{45}{subsection.4.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}Analyse de scenarii}{45}{subsubsection.4.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.2}Résultats des prédictions -- Gradient Boosting}{46}{subsubsection.4.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.3}Résultats des prédictions -- Réseau de neurones (ANN)}{46}{subsubsection.4.3.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.4}Interprétation et limites}{46}{subsubsection.4.3.3.4}%
+\contentsline {section}{\numberline {4}Implémentation dans Omniscope}{47}{section.4.4}%
+\contentsline {subsection}{\numberline {4.1}Portage de la pipeline de préparation}{47}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.2}Modèles de régression dans Omniscope}{48}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.3}Prédictions des scenarii dans Omniscope}{50}{subsection.4.4.3}%
+\contentsline {section}{\numberline {5}Conclusion générale}{52}{section.4.5}%
+\contentsline {part}{V\hspace {1em}Annexes}{53}{part.5}%
+\contentsline {section}{Références}{53}{section*.38}%
+\contentsline {section}{Remerciements}{53}{section*.39}%

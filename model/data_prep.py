@@ -370,7 +370,7 @@ def create_scenario_features(
     Args:
         baseline_emissions: Baseline emission values (already log-transformed if needed)
         multiplier: Factor to multiply emissions (e.g., 0.8 for -20%)
-        year: Year for prediction
+        year: Year for prediction (kept for backwards compatibility; not used when FEATURES excludes year)
         scaler: Fitted StandardScaler from training
     
     Returns:
@@ -378,9 +378,9 @@ def create_scenario_features(
     """
     # Apply multiplier to emissions
     scenario = baseline_emissions * multiplier
-    
-    # Add year feature
-    features = np.append(scenario, year).reshape(1, -1)
+
+    # Pollutant-only features (must match training FEATURE names)
+    features = scenario.reshape(1, -1)
     
     # Scale using the fitted scaler
     return scaler.transform(features)
