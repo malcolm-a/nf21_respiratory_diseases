@@ -23,7 +23,7 @@ class MLP(nn.Module):
         return self.layers(x)
     
 
-def train_model(data, epochs=500, lr=0.001):  # Lower lr, more epochs
+def train_model(data, epochs=400, lr=0.01):  # Lower lr, more epochs
     model = MLP(data.n_features)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.MSELoss()

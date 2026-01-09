@@ -26,7 +26,10 @@
 // =====================================================================
 
 #focus-slide[
-  #text(size: 40pt, weight: "bold")[Quelle est la relation entre la pollution atmosphérique et l'incidence des maladies respiratoires à l'échelle mondiale ?]
+  #text(
+    size: 40pt,
+    weight: "bold",
+  )[Quelle est la relation entre la pollution atmosphérique et l'incidence des maladies respiratoires à l'échelle mondiale ?]
 ]
 
 #slide(title: "Introduction")[
@@ -79,50 +82,50 @@
   ]
 
   #v(1em)
-    #table(
-      columns: (1fr, 1fr, 1fr, 1fr),
-      stroke: none,
-      inset: 6pt,
-      align: center,
-      [*🔍 Diagnostiquer*], [*📈 Expliquer*], [*🎯 Prédire*], [*💡 Recommander*],
-      [Zones à hautes \ émissions/maladies],
-      [Liens temporels \ pollution ↔ santé],
-      [Évolution selon \ pollution],
-      [Actions de \ réduction],
-    )
+  #table(
+    columns: (1fr, 1fr, 1fr, 1fr),
+    stroke: none,
+    inset: 6pt,
+    align: center,
+    [*🔍 Diagnostiquer*], [*📈 Expliquer*], [*🎯 Prédire*], [*💡 Recommander*],
+    [Zones à hautes \ émissions/maladies],
+    [Liens temporels \ pollution ↔ santé],
+    [Évolution selon \ pollution],
+    [Actions de \ réduction],
+  )
 ]
 
 #slide(title: "Enjeux du projet")[
-    #table(
-      columns: (1fr, 1fr),
-      stroke: none,
-      inset: 10pt,
-      [
-        *🌍 Environnementaux*
-        - Réglementations européennes
-        - Protection de la biodiversité
-        - Réduction des émissions
-      ],
-      [
-        *💰 Économiques*
-        - Réduction dépenses hospitalières
-        - Moins d'arrêts de travail
-        - Gains de productivité
-      ],
+  #table(
+    columns: (1fr, 1fr),
+    stroke: none,
+    inset: 10pt,
+    [
+      *🌍 Environnementaux*
+      - Réglementations européennes
+      - Protection de la biodiversité
+      - Réduction des émissions
+    ],
+    [
+      *💰 Économiques*
+      - Réduction dépenses hospitalières
+      - Moins d'arrêts de travail
+      - Gains de productivité
+    ],
 
-      [
-        *🏥 Sanitaires*
-        - Asthme, BPCO, cancers pulmonaires
-        - Facteur aggravant majeur
-        - Populations vulnérables
-      ],
-      [
-        *👥 Sociaux*
-        - Qualité de vie
-        - Équité territoriale
-        - Accès à un air sain
-      ],
-    )
+    [
+      *🏥 Sanitaires*
+      - Asthme, BPCO, cancers pulmonaires
+      - Facteur aggravant majeur
+      - Populations vulnérables
+    ],
+    [
+      *👥 Sociaux*
+      - Qualité de vie
+      - Équité territoriale
+      - Accès à un air sain
+    ],
+  )
 ]
 
 #slide(title: "Objectifs métier")[
@@ -140,27 +143,27 @@
 ]
 
 #slide(title: "Jeux de données")[
-    #table(
-      columns: (1fr, 1fr),
-      stroke: 0.5pt + gray,
-      inset: 10pt,
-      [
-        *📊 EDGAR* — Commission Européenne
+  #table(
+    columns: (1fr, 1fr),
+    stroke: 0.5pt + gray,
+    inset: 10pt,
+    [
+      *📊 EDGAR* — Commission Européenne
 
-        Emissions Database for Global Atmospheric Research
-        - ~6 000 lignes/polluant
-        - Année, Pays, Secteur, Polluant, Quantité (Gg)
-        - #stress[Émissions atmosphériques]
-      ],
-      [
-        *🏥 GBD 2023* — IHME
+      Emissions Database for Global Atmospheric Research
+      - ~6 000 lignes/polluant
+      - Année, Pays, Secteur, Polluant, Quantité (Gg)
+      - #stress[Émissions atmosphériques]
+    ],
+    [
+      *🏥 GBD 2023* — IHME
 
-        Global Burden of Disease
-        - ~30 000 lignes
-        - Année, Pays, Sexe, Incidence, Mortalité
-        - #stress[Maladies respiratoires]
-      ],
-    )
+      Global Burden of Disease
+      - ~30 000 lignes
+      - Année, Pays, Sexe, Incidence, Mortalité
+      - #stress[Maladies respiratoires]
+    ],
+  )
 
   #v(0.5em)
   #align(center)[
@@ -198,15 +201,15 @@
 #slide(title: "Description des données")[
   #align(center)[
     #table(
-        columns: (auto, auto, auto),
-        stroke: 0.5pt + gray,
-        inset: 8pt,
-        [*Caractéristique*], [*EDGAR*], [*GBD 2023*],
-        [Nombre de pays], [215], [204],
-        [Période], [1970–2022], [1980–2023],
-        [Variables], [9 polluants], [5 maladies],
-        [Granularité], [Pays, année, secteur], [Pays, année, sexe],
-        [Unité], [Kilotonnes (kt)], [Taux /100k hab.],
+      columns: (auto, auto, auto),
+      stroke: 0.5pt + gray,
+      inset: 8pt,
+      [*Caractéristique*], [*EDGAR*], [*GBD 2023*],
+      [Nombre de pays], [215], [204],
+      [Période], [1970–2022], [1980–2023],
+      [Variables], [9 polluants], [5 maladies],
+      [Granularité], [Pays, année, secteur], [Pays, année, sexe],
+      [Unité], [Kilotonnes (kt)], [Taux /100k hab.],
     )
   ]
 
@@ -450,15 +453,15 @@
 
   #v(0.5em)
   #align(center)[
-      #table(
-        columns: (auto, auto, auto, auto, auto),
-        stroke: 0.5pt + gray,
-        inset: 6pt,
-        [*Maladie*], [*Lag 0*], [*Lag 3*], [*Lag 6*], [*Lag 9*],
-        [Cancer], [0.857], [0.863], [0.872], [0.866],
-        [Pneumo], [0.806], [0.787], [0.737], [0.793],
-        [BPCO], [0.794], [0.781], [0.792], [0.812],
-      )
+    #table(
+      columns: (auto, auto, auto, auto, auto),
+      stroke: 0.5pt + gray,
+      inset: 6pt,
+      [*Maladie*], [*Lag 0*], [*Lag 3*], [*Lag 6*], [*Lag 9*],
+      [Cancer], [0.857], [0.863], [0.872], [0.866],
+      [Pneumo], [0.806], [0.787], [0.737], [0.793],
+      [BPCO], [0.794], [0.781], [0.792], [0.812],
+    )
   ]
 
   #align(center)[
@@ -517,21 +520,21 @@
 
 #slide(title: "Architecture du réseau de neurones")[
   #cols(columns: (3fr, 2fr), gutter: 1.5em)[
-      ```python
-      class MLP(nn.Module):
-          def __init__(self, n_features):
-              super().__init__()
-              self.layers = nn.Sequential(
-                  nn.Linear(n_features, 64),
-                  nn.ReLU(),
-                  nn.Linear(64, 32),
-                  nn.ReLU(),
-                  nn.Linear(32, 1)
-              )
+    ```python
+    class MLP(nn.Module):
+        def __init__(self, n_features):
+            super().__init__()
+            self.layers = nn.Sequential(
+                nn.Linear(n_features, 64),
+                nn.ReLU(),
+                nn.Linear(64, 32),
+                nn.ReLU(),
+                nn.Linear(32, 1)
+            )
 
-          def forward(self, x):
-              return self.layers(x)
-      ```
+        def forward(self, x):
+            return self.layers(x)
+    ```
   ][
     *📐 Architecture*
     - Entrée : 9 features
@@ -773,7 +776,7 @@
     - Choix modèles limité
     - Pas de contrôle hyperparamètres
     - #stress[Export impossible]
-    - MARS : overfitting
+    - MARS : problème de convergence
   ]
 
   #v(0.5em)
@@ -781,6 +784,92 @@
     Omniscope = exploration & dashboards • Modélisation avancée → #stress[Python]
   ]
 ]
+
+// =====================================================================
+// ÉVALUATION
+// =====================================================================
+
+#title-slide[
+  Évaluation des Modèles
+]
+
+#slide(title: "Principes d'évaluation")[
+  #cols(columns: (1fr, 1fr), gutter: 2em)[
+    *📊 Métriques utilisées*
+    - #stress[R²] : variance expliquée
+    - #stress[RMSE] : erreur quadratique
+    - Analyse des résidus
+
+    *✂️ Séparation des données*
+    - Train : 80% (entraînement)
+    - Test : 20% (évaluation)
+    - Graine aléatoire fixée
+  ][
+    *🔄 Méthodes appliquées*
+    - Comparaison multi-modèles
+    - GridSearchCV (hyperparams)
+    - Test d'extrapolation
+
+    *⚠️ Points d'attention*
+    - Pas de k-fold CV
+    - Split non temporel
+    - Pas de validation externe
+  ]
+]
+
+#slide(title: "Synthèse de l'évaluation")[
+  #align(center)[
+    #table(
+      columns: (auto, auto, auto, auto),
+      stroke: 0.5pt + gray,
+      inset: 8pt,
+      [*Critère*], [*GB*], [*ANN*], [*Note*],
+      [R² Cancer], [0.923], [0.872], [GB meilleur],
+      [R² BPCO], [0.901], [0.637], [GB meilleur],
+      [R² Pneumo], [0.805], [0.956], [ANN meilleur],
+      [Extrapolation], [❌ Incohérent], [✅ Cohérent], [ANN meilleur],
+      [Interprétabilité], [✅ Bonne], [❌ Opaque], [GB meilleur],
+    )
+  ]
+
+  #align(center)[
+    R² élevé ≠ prédictions fiables hors distribution !
+  ]
+]
+
+// =====================================================================
+// DÉPLOIEMENT
+// =====================================================================
+
+#title-slide[
+  Déploiement
+]
+
+
+#slide(title: "Comment déployer un modèle ?")[
+  #cols(columns: (1fr, 1fr), gutter: 2em)[
+    *1. Sauvegarder le modèle*
+    - sklearn : `joblib.dump()`
+    - PyTorch : `torch.save()`
+    - + Scaler, transformations
+
+    *2. Créer une API*
+    - FastAPI / Flask
+    - Endpoint `/predict`
+    - Validation des entrées
+  ][
+    *3. Conteneuriser*
+    - Dockerfile
+    - Environnement reproductible
+    - CI/CD automatisé
+
+    *4. Déployer en cloud*
+    - AWS SageMaker
+    - GCP Vertex AI
+    - Azure ML
+  ]
+]
+
 
 // =====================================================================
 // CONCLUSION
@@ -833,23 +922,6 @@
 
   #v(0.5em)
   *⚠️ Limites* : Corrélation ≠ causalité • Extrapolation limitée • Granularité pays
-]
-
-#slide(title: "Perspectives")[
-  *📈 Court terme*
-  - Affiner hyperparamètres
-  - Tester autres architectures NN
-  - Validation croisée robuste
-
-  *🔮 Moyen terme*
-  - Données socio-économiques
-  - Séries temporelles
-  - Analyse causale
-
-  *🌍 Long terme*
-  - Dashboard temps réel
-  - API de prédiction
-  - Extension autres maladies
 ]
 
 #focus-slide[
